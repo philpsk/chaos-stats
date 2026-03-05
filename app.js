@@ -84,55 +84,8 @@ function findWL(obj) {
 }
 
 async function fetchAllRecord(ano, rawAno) {
-    const target = rawAno || ano;
-    const rawUrl = `${GAME_API}?ano=${target}&recordType=1&year=0&seasonNo=0&characterNo=0&tabType=A`;
-    // GitHub Pages (https)에서는 HTTP 요청이 막히므로 CORS 프록시 사용 (allorigins)
-    const url = location.protocol === 'https:'
-        ? `https://api.allorigins.win/get?url=${encodeURIComponent(rawUrl)}`
-        : rawUrl;
-    try {
-        const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-        if (!res.ok) return null;
-        let rawText = await res.text();
-
-        // allorigins 프록시의 경우 JSON으로 래핑됨
-        if (url.includes('allorigins')) {
-            try {
-                const proxyData = JSON.parse(rawText);
-                if (proxyData && proxyData.contents) {
-                    rawText = proxyData.contents;
-                }
-            } catch (e) { }
-        }
-
-        const s = rawText.indexOf('{');
-        const e = rawText.lastIndexOf('}');
-        if (s === -1 || e <= s) return null;
-        const jsonStr = rawText.substring(s, e + 1);
-        let parsed = null;
-        // 1) 표준 JSON 시도
-        try { parsed = JSON.parse(jsonStr); } catch { }
-        // 2) 실패 시 키에 따옴표 추가 후 재시도
-        if (!parsed) {
-            try {
-                const fixed = jsonStr
-                    .replace(/([{,])\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
-                    .replace(/:\s*'([^']*)'/g, ':"$1"');
-                parsed = JSON.parse(fixed);
-            } catch { }
-        }
-        // 3) 그래도 실패 시 Function 평가 (안전하게 객체만)
-        if (!parsed) {
-            try {
-                parsed = new Function(`"use strict"; return (${jsonStr})`)();
-            } catch { }
-        }
-        if (!parsed) return null;
-        return findWL(parsed);
-    } catch (ex) {
-        console.warn('[fetchAllRecord] 실패:', ex.message);
-        return null;
-    }
+    const dbInfo = userDetails[String(rawAno || ano)] || userDetails[rawAno || ano] || {};
+    return dbInfo.rank_season_wl || null;
 }
 
 // 구버전 /api/rankinfo 삭제 - 위의 직접 fetch 버전 사용
