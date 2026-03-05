@@ -102,6 +102,12 @@ async function init() {
         userDetails = await dbRes.json();
         filteredData = [...allData];
 
+        console.log("Data Loaded:", {
+            rankSummary: allData.length,
+            dbSummary: Object.keys(userDetails).length,
+            sample: userDetails['2489'] ? "덕구 있음" : "덕구 없음"
+        });
+
         renderTable();
         if (allData.length > 0) selectUser(allData[0].userANO || allData[0].ano);
 
