@@ -36,7 +36,10 @@
     </header>
 
     <div class="search-container">
-      <input type="text" id="search-input" placeholder="닉네임 또는 ANO 검색..." autocomplete="off">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <input type="text" id="search-input" placeholder="닉네임 또는 ANO 검색..." autocomplete="off">
+        <span id="total-count" style="font-size:0.85rem; color:var(--text-dim);">검색 결과: 0명</span>
+      </div>
       <div id="pagination-top" class="pagination-area"></div>
     </div>
 

@@ -64,7 +64,8 @@ const els = {
     seasonWr: document.getElementById('user-season-wr'),
     heroList: document.getElementById('hero-list'),
     pagination: document.getElementById('pagination'),
-    paginationTop: document.getElementById('pagination-top')
+    paginationTop: document.getElementById('pagination-top'),
+    totalCount: document.getElementById('total-count')
 };
 
 
@@ -176,6 +177,9 @@ function sortData(key) {
 }
 
 function renderTable() {
+    if (els.totalCount) {
+        els.totalCount.innerText = `검색 결과: ${filteredData.length}명`;
+    }
     const start = (currentPage - 1) * pageSize;
     const end = start + pageSize;
     const pageData = filteredData.slice(start, end);
