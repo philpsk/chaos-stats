@@ -94,43 +94,45 @@ async function fetchAllRecord(ano, rawAno) {
     const targetUrl = GAME_API + '?tabType=A&ano=' + targetAno;
     const isLocal = window.location.protocol === 'http:';
 
-    // 시도할 경로 목록: 로컬이면 직접 호출 우선, HTTPS면 프록시만
+    // 시도할 경로 목록
     const attemptUrls = [];
-    if (isLocal) attemptUrls.push(targetUrl); // 로컬(HTTP)은 직접 호출 가능 (CORS 오픈됨)
-
+    if (isLocal) attemptUrls.push(targetUrl);
     attemptUrls.push(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
-    attemptUrls.push(`https://thingproxy.freeboard.io/fetch/${targetUrl}`);
-    attemptUrls.push(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
+    // attemptUrls.push(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`); // 404 자주 발생하여 제외 가능
 
     for (const url of attemptUrls) {
         try {
             console.log(`Trying: ${url}`);
-            const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+            const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
             const data = await res.json();
-            let content = data.contents || data; // allorigins는 contents에 담아줌
+            let content = data.contents || data;
 
             if (typeof content === 'string' && content.length > 50) {
-                // [핵심] 비표준 JSON (따옴표 없는 키) 추출 및 보정 파싱
-                const wlMatch = content.match(/winLoseTendency\s*:\s*(\[[^]*?\])/);
+                // [수정] 배열([])뿐만 아니라 객체({}) 형태도 모두 추출 가능하도록 변경
+                const wlMatch = content.match(/winLoseTendency\s*:\s*([\[\{][^]*?[\]\}])/);
                 if (wlMatch && wlMatch[1]) {
-                    let rawListStr = wlMatch[1];
+                    let rawStr = wlMatch[1].trim();
                     try {
-                        // Loose JSON -> Strict JSON 변환 (키에 따옴표 붙이기)
-                        const fixedJson = rawListStr
-                            .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":') // 키에 따옴표
-                            .replace(/:\s*'([^']*)'/g, ':"$1"'); // 값에 홑따옴표를 쌍따옴표로
+                        // 비표준 JSON 보정 (따옴표 없는 키, 불필요한 쉼표, 홑따옴표 등)
+                        const fixedJson = rawStr
+                            .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":') // 키에 쌍따옴표
+                            .replace(/:\s*'([^']*)'/g, ':"$1"')               // 값에 쌍따옴표
+                            .replace(/,\s*([\]\}])/g, '$1');                  // 마지막 쉼표 제거
 
-                        const wlData = JSON.parse(fixedJson);
+                        let wlData = JSON.parse(fixedJson);
+                        // 객체인 경우 배열로 감싸서 findWL 호환성 유지
+                        if (!Array.isArray(wlData)) wlData = [wlData];
+
                         const summary = findWL(wlData);
                         if (summary) {
                             console.log(`✓ Real-time Success: ${summary}`);
                             return summary;
                         }
                     } catch (parseErr) {
-                        console.warn("JSON Parse failed, trying eval fallback...");
-                        // 정 안되면 eval (비표준 데이터이므로)
+                        console.warn("Regex parse failed, trying direct eval fallback...");
                         try {
-                            const wlData = eval('(' + rawListStr + ')');
+                            let wlData = eval('(' + rawStr + ')');
+                            if (!Array.isArray(wlData)) wlData = [wlData];
                             const summary = findWL(wlData);
                             if (summary) return summary;
                         } catch (e) { }
@@ -138,7 +140,7 @@ async function fetchAllRecord(ano, rawAno) {
                 }
             }
         } catch (e) {
-            console.warn(`Attempt failed (${url}):`, e.message);
+            console.warn(`Attempt failed (${url.substring(0, 40)}...):`, e.message);
         }
     }
     return null;
