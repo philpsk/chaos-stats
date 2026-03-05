@@ -85,8 +85,38 @@ function findWL(obj) {
 }
 
 async function fetchAllRecord(ano, rawAno) {
-    const dbInfo = userDetails[String(rawAno || ano)] || userDetails[rawAno || ano] || {};
-    return dbInfo.rank_all_wl || null;
+    const targetAno = String(rawAno || ano);
+    const dbInfo = userDetails[targetAno] || {};
+
+    // 1. DB에 이미 데이터가 있으면 반환
+    if (dbInfo.rank_all_wl) return dbInfo.rank_all_wl;
+
+    // 2. DB에 없으면 실시간 프록시 페칭 시도 (폴백)
+    console.log(`Attempting real-time fetch for ANO: ${targetAno}`);
+    try {
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(GAME_API + '?tabType=A&ano=' + targetAno)}`;
+        const res = await fetch(proxyUrl);
+        const json = await res.json();
+
+        if (json.contents) {
+            const match = json.contents.match(/winLoseTendency\s*:\s*(\[[^\]]*\])/);
+            if (match && match[1]) {
+                const wlData = JSON.parse(match[1]);
+                const summary = findWL(wlData);
+                if (summary) {
+                    console.log(`Real-time fetch success for ${targetAno}: ${summary}`);
+                    // 메모리에 캐시 (세션 동안 유지)
+                    if (!userDetails[targetAno]) userDetails[targetAno] = {};
+                    userDetails[targetAno].rank_all_wl = summary;
+                    return summary;
+                }
+            }
+        }
+    } catch (e) {
+        console.error(`Real-time fetch failed for ${targetAno}:`, e);
+    }
+
+    return null;
 }
 
 // 구버전 /api/rankinfo 삭제 - 위의 직접 fetch 버전 사용
@@ -311,33 +341,15 @@ async function selectUser(ano) {
 
     if (user) {
         els.nickname.innerText = `닉네임: ${user.nick || user.nickname || '---'}`;
-        els.ano.innerText = `ANO: ${ano}`;
-        els.grade.innerText = `등급: ${user.gradeName || user.grade || '---'}`;
+        els.ano.innerText = `ANO: ${user.userANO || user.ano}`;
+        els.grade.innerText = `등급: ${user.gradeName || '---'} ${user.gradeLevel || ''}`;
         els.grade.style.color = getGradeColor(user.gradeName || user.grade);
         els.grade.style.fontWeight = "bold";
         els.rank.innerText = `${user.RTRank || user.rank || '---'}위`;
+        // els.seasonWr.innerText = `${user.winRate || 0}%`; // This line is removed as per new code
 
-        const win = parseInt(user.win || user.WinCount || user.wincount || 0, 10);
-        const loss = parseInt(user.lose || user.LoseCount || user.losecount || 0, 10);
-        let wrStr = (win + loss) > 0 ? ((win / (win + loss)) * 100).toFixed(0) : 0;
-
-        let pc = win + loss;
-        els.seasonWr.innerText = `${wrStr}%`;
-        els.stats.seasonRec.innerHTML = `${pc}전 <span style="color:#238636">${win}승</span> <span style="color:#da3633">${loss}패</span> (${wrStr}%)`;
-
-        // 상세 정보 패널 상단에 닉네임 & ANO 표시
+        // 상세 정보판 업데이트
         els.stats.nick.innerText = user.nick || user.nickname || '---';
-        els.stats.anoVal.innerText = ano;
-    }
-
-    // Populate Detailed stats from detail object
-    const basic = detail.basicInfo || {};
-
-    // 랭대 총전적 & 연승: 클릭할 때마다 항상 실시간 fetch
-    els.stats.totalRec.innerHTML = `<span style="color:#888; font-style:italic;">불러오는 중...</span>`;
-    els.stats.consecutive.innerHTML = `<span style="color:#888;">...</span>`;
-    const rawAno = user ? String(user.userANO || user.ano) : ano;
-    fetchAllRecord(ano, rawAno).then(wl => {
         if (wl && typeof wl === 'object' && Object.keys(wl).length > 0) {
             const awin = parseInt(wl.totalWinCount || wl.WinCount || wl.winCount || 0, 10);
             const aloss = parseInt(wl.totalLoseCount || wl.LoseCount || wl.loseCount || 0, 10);
