@@ -72,15 +72,49 @@ const els = {
 // 랭대 총전적(tabType=A) - 게임 서버에 직접 fetch (Python 서버 불필요)
 const GAME_API = 'http://www.chaosonline.co.kr:8081/ClientJson/RecordInfo.aspx';
 
-// 재귀적으로 winLoseTendency 탐색
-function findWL(obj) {
+// 데이터 포맷팅: { totalWinCount: 5456, ... } -> "8484전 5456승 3020패 (64%) | 1연승"
+function formatWL(item) {
+    if (!item || typeof item !== 'object') return null;
+    const win = parseInt(item.totalWinCount || item.WinCount || item.winCount || 0, 10);
+    const loss = parseInt(item.totalLoseCount || item.LoseCount || item.loseCount || 0, 10);
+    const draw = parseInt(item.totalDrawCount || item.DrawCount || 0, 10);
+    const pc = parseInt(item.playCount || item.PlayCount || 0, 10) || (win + loss + draw);
+    const wr = item.totalWinRate || (pc > 0 ? Math.round((win / pc) * 100) : 0);
+    const con = parseInt(item.consecutiveWinLose || item.con_winlose || 0, 10);
+
+    let conStr = "---";
+    if (con > 0) conStr = `${con}연승`;
+    else if (con < 0) conStr = `${Math.abs(con)}연패`;
+
+    return `${pc}전 ${win}승 ${loss}패 (${wr}%) | ${conStr}`;
+}
+
+// 재귀적으로 데이터 뭉치 찾기
+function findAndFormatWL(obj) {
     if (!obj || typeof obj !== 'object') return null;
-    if (Array.isArray(obj)) {
-        for (const item of obj) { const r = findWL(item); if (r) return r; }
-        return null;
+
+    // 만약 현재 객체에 전적 관련 핵심 필드가 있다면 바로 포맷팅
+    if ('totalWinCount' in obj || 'WinCount' in obj || 'winCount' in obj) {
+        return formatWL(obj);
     }
-    if ('winLoseTendency' in obj) return obj['winLoseTendency'];
-    for (const v of Object.values(obj)) { const r = findWL(v); if (r) return r; }
+
+    if (Array.isArray(obj)) {
+        for (const item of obj) {
+            const r = findAndFormatWL(item);
+            if (r) return r;
+        }
+    } else {
+        // winLoseTendency 필드가 있으면 그 안을 먼저 탐색
+        if ('winLoseTendency' in obj) {
+            const r = findAndFormatWL(obj.winLoseTendency);
+            if (r) return r;
+        }
+        // 자식 노드들 탐색
+        for (const v of Object.values(obj)) {
+            const r = findAndFormatWL(v);
+            if (r) return r;
+        }
+    }
     return null;
 }
 
@@ -89,58 +123,48 @@ async function fetchAllRecord(ano, rawAno) {
     const dbInfo = userDetails[targetAno] || {};
     if (dbInfo.rank_all_wl) return dbInfo.rank_all_wl;
 
-    console.log(`Real-time fetch (Total & Streak) for ANO: ${targetAno}`);
+    console.log(`Real-time fetch for ${targetAno}`);
 
     const targetUrl = GAME_API + '?tabType=A&ano=' + targetAno;
     const isLocal = window.location.protocol === 'http:';
-
-    // 시도할 경로 목록
     const attemptUrls = [];
     if (isLocal) attemptUrls.push(targetUrl);
     attemptUrls.push(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
-    // attemptUrls.push(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`); // 404 자주 발생하여 제외 가능
 
     for (const url of attemptUrls) {
         try {
-            console.log(`Trying: ${url}`);
             const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
             const data = await res.json();
             let content = data.contents || data;
 
             if (typeof content === 'string' && content.length > 50) {
-                // [수정] 배열([])뿐만 아니라 객체({}) 형태도 모두 추출 가능하도록 변경
+                // winLoseTendency 영역 추출 (배열 또는 객체)
                 const wlMatch = content.match(/winLoseTendency\s*:\s*([\[\{][^]*?[\]\}])/);
                 if (wlMatch && wlMatch[1]) {
-                    let rawStr = wlMatch[1].trim();
+                    const rawStr = wlMatch[1].trim();
+                    let parsedData = null;
                     try {
-                        // 비표준 JSON 보정 (따옴표 없는 키, 불필요한 쉼표, 홑따옴표 등)
+                        // 1. 보정된 JSON 파싱 시도
                         const fixedJson = rawStr
-                            .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":') // 키에 쌍따옴표
-                            .replace(/:\s*'([^']*)'/g, ':"$1"')               // 값에 쌍따옴표
-                            .replace(/,\s*([\]\}])/g, '$1');                  // 마지막 쉼표 제거
+                            .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
+                            .replace(/:\s*'([^']*)'/g, ':"$1"')
+                            .replace(/,\s*([\]\}])/g, '$1');
+                        parsedData = JSON.parse(fixedJson);
+                    } catch (e) {
+                        try { parsedData = eval('(' + rawStr + ')'); } catch (e2) { }
+                    }
 
-                        let wlData = JSON.parse(fixedJson);
-                        // 객체인 경우 배열로 감싸서 findWL 호환성 유지
-                        if (!Array.isArray(wlData)) wlData = [wlData];
-
-                        const summary = findWL(wlData);
+                    if (parsedData) {
+                        const summary = findAndFormatWL(parsedData);
                         if (summary) {
                             console.log(`✓ Real-time Success: ${summary}`);
                             return summary;
                         }
-                    } catch (parseErr) {
-                        console.warn("Regex parse failed, trying direct eval fallback...");
-                        try {
-                            let wlData = eval('(' + rawStr + ')');
-                            if (!Array.isArray(wlData)) wlData = [wlData];
-                            const summary = findWL(wlData);
-                            if (summary) return summary;
-                        } catch (e) { }
                     }
                 }
             }
         } catch (e) {
-            console.warn(`Attempt failed (${url.substring(0, 40)}...):`, e.message);
+            console.warn(`Attempt failed:`, e.message);
         }
     }
     return null;
