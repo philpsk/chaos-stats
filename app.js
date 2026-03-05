@@ -338,18 +338,33 @@ function renderPagination() {
 async function selectUser(ano) {
     const user = allData.find(u => (u.userANO || u.ano).toString() === ano.toString());
     const detail = userDetails[ano] || {};
+    const basic = detail.basicInfo || {};
 
     if (user) {
         els.nickname.innerText = `닉네임: ${user.nick || user.nickname || '---'}`;
-        els.ano.innerText = `ANO: ${user.userANO || user.ano}`;
+        const displayAno = user.userANO || user.ano || ano;
+        els.ano.innerText = `ANO: ${displayAno}`;
         els.grade.innerText = `등급: ${user.gradeName || '---'} ${user.gradeLevel || ''}`;
         els.grade.style.color = getGradeColor(user.gradeName || user.grade);
         els.grade.style.fontWeight = "bold";
         els.rank.innerText = `${user.RTRank || user.rank || '---'}위`;
-        // els.seasonWr.innerText = `${user.winRate || 0}%`; // This line is removed as per new code
+
+        // 승률 표시 (상단 배지)
+        const win = parseInt(user.winCount || user.win || 0, 10);
+        const loss = parseInt(user.loseCount || user.lose || 0, 10);
+        let wr = user.winRate || ((win + loss) > 0 ? Math.round((win / (win + loss)) * 100) : 0);
+        els.seasonWr.innerText = `${wr}%`;
 
         // 상세 정보판 업데이트
         els.stats.nick.innerText = user.nick || user.nickname || '---';
+        els.stats.anoVal.innerText = displayAno;
+
+        // 랭대 총전적: 실시간 페칭 시도
+        els.stats.totalRec.innerHTML = '<span class="loading-text">불러오는 중...</span>';
+        els.stats.consecutive.innerHTML = '<span class="loading-text">...</span>';
+
+        const wl = await fetchAllRecord(ano, displayAno);
+
         if (wl && typeof wl === 'object' && Object.keys(wl).length > 0) {
             const awin = parseInt(wl.totalWinCount || wl.WinCount || wl.winCount || 0, 10);
             const aloss = parseInt(wl.totalLoseCount || wl.LoseCount || wl.loseCount || 0, 10);
@@ -369,49 +384,32 @@ async function selectUser(ano) {
             els.stats.totalRec.innerHTML = `<span style="color:#888; font-style:italic;">데이터 없음</span>`;
             els.stats.consecutive.innerHTML = `<span style="color:#888;">---</span>`;
         }
-    });
-    // 랭대 총전적은 위 fetchAllRecord Promise에서 비동기 처리됨
 
-    // 시즌 전적 (rank_season_wl 우선, 없으면 상위 랭킹 데이터 사용)
-    if (detail.rank_season_wl) {
-        const swl = detail.rank_season_wl;
-        const swin = parseInt(swl.totalWinCount || swl.WinCount || swl.winCount || 0, 10);
-        const sloss = parseInt(swl.totalLoseCount || swl.LoseCount || swl.loseCount || 0, 10);
-        const spc = parseInt(swl.playCount || swl.play_Count || swl.PlayCount || 0, 10) || swin + sloss;
-        const swr = swl.totalWinRate || swl.WinRate_InclDisc || swl.winRate || 0;
-        const sWrDisp = swr ? String(swr).replace('%', '').split('.')[0] : (spc > 0 ? Math.round((swin / spc) * 100) : 0);
-        els.seasonWr.innerText = `${sWrDisp}%`;
-        els.stats.seasonRec.innerHTML = `${spc}전 <span style="color:#238636">${swin}승</span> <span style="color:#da3633">${sloss}패</span> (${sWrDisp}%)`;
-    } else if (user) {
-        const swin2 = parseInt(user.win || user.WinCount || user.wincount || 0, 10);
-        const sloss2 = parseInt(user.lose || user.LoseCount || user.losecount || 0, 10);
-        const spc2 = swin2 + sloss2;
-        const sWr2 = spc2 > 0 ? Math.round((swin2 / spc2) * 100) : 0;
-        els.seasonWr.innerText = `${sWr2}%`;
-        els.stats.seasonRec.innerHTML = `${spc2}전 <span style="color:#238636">${swin2}승</span> <span style="color:#da3633">${sloss2}패</span> (${sWr2}%)`;
+        // 시즌 전적 (rank_season_wl 우선)
+        const swl = detail.rank_season_wl || user;
+        const swin = parseInt(swl.totalWinCount || swl.WinCount || swl.winCount || swl.win || 0, 10);
+        const sloss = parseInt(swl.totalLoseCount || swl.LoseCount || swl.loseCount || swl.lose || 0, 10);
+        const spc = parseInt(swl.playCount || swl.PlayCount || 0, 10) || swin + sloss;
+        const swr = swl.totalWinRate || (spc > 0 ? Math.round((swin / spc) * 100) : 0);
+        els.stats.seasonRec.innerHTML = `${spc}전 <span style="color:#238636">${swin}승</span> <span style="color:#da3633">${sloss}패</span> (${swr}%)`;
+
+        // 기타 상세 스탯
+        els.stats.totalCont.innerText = Number(basic.totalContribution || user.totalContribution || 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        els.stats.combatCont.innerText = Number(basic.combatContribution || user.combatContribution || 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        els.stats.combatRate.innerText = `${(basic.battleJoinRate || user.combatRate || 0)}%`;
+        els.stats.kda.innerText = `${user.avgKill || 0} / ${user.avgDeath || 0} / ${user.avgAssist || 0}`;
+        els.stats.avgLv.innerText = `Lv.${(basic.averageCharacterLevel || user.avgLevel || 0)}`;
+        els.stats.avgDispell.innerText = `${basic.avgDispell || user.avgDispell || 0}`;
+        els.stats.avgPotion.innerText = `${basic.avgPotion || user.avgPotion || 0}`;
+        els.stats.avgGold.innerText = Number(basic.averageGetGold || user.avgGold || 0).toLocaleString();
+
+        renderHeroList(detail);
     }
+}
 
-    const conStr = detail.winLoseTendency || "---"; // rank_all_wl fetch 이후 갱신됨
-    if (conStr.includes('연승')) {
-        els.stats.consecutive.innerHTML = `<span style="color:#3FB950; font-weight:bold;">${conStr}</span>`;
-    } else if (conStr.includes('연패')) {
-        els.stats.consecutive.innerHTML = `<span style="color:#FF4D4D; font-weight:bold;">${conStr}</span>`;
-    } else {
-        els.stats.consecutive.innerText = conStr;
-    }
-
-    // Other detailed stats
-    els.stats.totalCont.innerText = Number(basic.totalContribution || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    els.stats.combatCont.innerText = Number(basic.combatContribution || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    els.stats.combatRate.innerText = `${(basic.battleJoinRate || 0).toFixed(5)}%`;
-    els.stats.kda.innerText = user.killDieAssistRate || user.killDieAssistrate || detail.kda || "---";
-    els.stats.avgLv.innerText = `Lv.${(basic.averageCharacterLevel || 0).toFixed(2)}`;
-    els.stats.avgDispell.innerText = `${basic.avgDispell || 0} 회`;
-    els.stats.avgPotion.innerText = `${basic.avgPotion || 0} 회`;
-    els.stats.avgGold.innerText = Number(basic.averageGetGold || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-    // Heroes list styling mirroring Desktop Python logic
+function renderHeroList(detail) {
     const heroes = detail.characterList || [];
+    const basic = detail.basicInfo || {};
     const likeHeroesRaw = detail.rank_season_wl ? (detail.rank_season_wl.likeRateHero || "") : (basic.likeRateHero || "");
     const likeHeroes = likeHeroesRaw.split(",").map(s => s.trim());
 
