@@ -92,9 +92,10 @@ async function fetchAllRecord(ano, rawAno) {
 
 async function init() {
     try {
+        const t = Date.now();
         const [rankRes, dbRes] = await Promise.all([
-            fetch('V88_FINAL_RANK_DEEP.json').catch(() => ({ json: () => [] })),
-            fetch('DB.json').catch(() => ({ json: () => ({}) }))
+            fetch(`V88_FINAL_RANK_DEEP.json?t=${t}`).catch(() => ({ json: () => [] })),
+            fetch(`DB.json?t=${t}`).catch(() => ({ json: () => ({}) }))
         ]);
 
         allData = await rankRes.json();
