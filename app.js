@@ -86,36 +86,45 @@ function findWL(obj) {
 
 async function fetchAllRecord(ano, rawAno) {
     const targetAno = String(rawAno || ano);
-    const dbInfo = userDetails[targetAno] || {};
 
-    // 1. DB에 이미 데이터가 있으면 반환
+    // 0. 상세 정보 DB가 있다면 거기서 연승/연패 정보가 있을 수 있으므로 먼저 확인
+    const dbInfo = userDetails[targetAno] || {};
     if (dbInfo.rank_all_wl) return dbInfo.rank_all_wl;
 
-    // 2. DB에 없으면 실시간 프록시 페칭 시도 (폴백)
-    console.log(`Attempting real-time fetch for ANO: ${targetAno}`);
-    try {
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(GAME_API + '?tabType=A&ano=' + targetAno)}`;
-        const res = await fetch(proxyUrl);
-        const json = await res.json();
+    console.log(`Real-time fetch (Total & Streak) for ANO: ${targetAno}`);
 
-        if (json.contents) {
-            const match = json.contents.match(/winLoseTendency\s*:\s*(\[[^\]]*\])/);
-            if (match && match[1]) {
-                const wlData = JSON.parse(match[1]);
-                const summary = findWL(wlData);
-                if (summary) {
-                    console.log(`Real-time fetch success for ${targetAno}: ${summary}`);
-                    // 메모리에 캐시 (세션 동안 유지)
-                    if (!userDetails[targetAno]) userDetails[targetAno] = {};
-                    userDetails[targetAno].rank_all_wl = summary;
-                    return summary;
+    const targetUrl = GAME_API + '?tabType=A&ano=' + targetAno;
+    const proxies = [
+        `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`,
+        `https://thingproxy.freeboard.io/fetch/${targetUrl}`,
+        `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
+    ];
+
+    for (const p of proxies) {
+        try {
+            const res = await fetch(p, { signal: AbortSignal.timeout(5000) });
+            const data = await res.json();
+            const content = data.contents || data; // allorigins는 contents에 넣어서 줌
+
+            if (typeof content === 'string' && content.length > 50) {
+                // 실시간 전적 및 연승 연패 정규식 추출
+                const wlMatch = content.match(/winLoseTendency\s*:\s*(\[[^\]]*\])/);
+                if (wlMatch && wlMatch[1]) {
+                    const wlData = JSON.parse(wlMatch[1]);
+                    // wlData[0] 등에 "15연승", "7연패" 또는 전적 정보가 들어있음
+                    // 사용자가 원하는 "랭대총전적"과 "연승연패" 데이터 반환
+                    const summary = findWL(wlData);
+                    if (summary) {
+                        console.log(`✓ Real-time Success (${targetAno}): ${summary}`);
+                        return summary;
+                    }
                 }
             }
+        } catch (e) {
+            console.warn(`Proxy ${p} failed:`, e.message);
+            continue;
         }
-    } catch (e) {
-        console.error(`Real-time fetch failed for ${targetAno}:`, e);
     }
-
     return null;
 }
 
@@ -341,6 +350,7 @@ async function selectUser(ano) {
     const basic = detail.basicInfo || {};
 
     if (user) {
+        // [1] 즉시 UI 채우기 (기존 DB 정보 우선, 없으면 랭킹 행 데이터 활용)
         els.nickname.innerText = `닉네임: ${user.nick || user.nickname || '---'}`;
         const displayAno = user.userANO || user.ano || ano;
         els.ano.innerText = `ANO: ${displayAno}`;
@@ -359,41 +369,15 @@ async function selectUser(ano) {
         els.stats.nick.innerText = user.nick || user.nickname || '---';
         els.stats.anoVal.innerText = displayAno;
 
-        // 랭대 총전적: 실시간 페칭 시도
-        els.stats.totalRec.innerHTML = '<span class="loading-text">불러오는 중...</span>';
-        els.stats.consecutive.innerHTML = '<span class="loading-text">...</span>';
-
-        const wl = await fetchAllRecord(ano, displayAno);
-
-        if (wl && typeof wl === 'object' && Object.keys(wl).length > 0) {
-            const awin = parseInt(wl.totalWinCount || wl.WinCount || wl.winCount || 0, 10);
-            const aloss = parseInt(wl.totalLoseCount || wl.LoseCount || wl.loseCount || 0, 10);
-            const apc = parseInt(wl.playCount || wl.playCount_InclDisc || 0, 10) || (awin + aloss);
-            const awrStr = wl.totalWinRate || (apc > 0 ? Math.round((awin / apc) * 100).toString() : "0");
-
-            els.stats.totalRec.innerHTML = `${apc}전 <span style="color:#238636">${awin}승</span> <span style="color:#da3633">${aloss}패</span> (${awrStr}%)`;
-
-            // 연승/연패
-            const con = parseInt(wl.consecutiveWinLose || wl.con_winlose || 0, 10);
-            let conStr;
-            if (con > 0) conStr = `<span style="color:#3FB950; font-weight:bold;">${con}연승</span>`;
-            else if (con < 0) conStr = `<span style="color:#FF4D4D; font-weight:bold;">${Math.abs(con)}연패</span>`;
-            else conStr = `<span style="color:#888">---</span>`;
-            els.stats.consecutive.innerHTML = conStr;
-        } else {
-            els.stats.totalRec.innerHTML = `<span style="color:#888; font-style:italic;">데이터 없음</span>`;
-            els.stats.consecutive.innerHTML = `<span style="color:#888;">---</span>`;
-        }
-
-        // 시즌 전적 (rank_season_wl 우선)
+        // 시즌 전적 (기존 DB 정보가 있으면 사용, 없으면 리스트 데이터 사용)
         const swl = detail.rank_season_wl || user;
-        const swin = parseInt(swl.totalWinCount || swl.WinCount || swl.winCount || swl.win || 0, 10);
-        const sloss = parseInt(swl.totalLoseCount || swl.LoseCount || swl.loseCount || swl.lose || 0, 10);
+        const swin = parseInt(swl.winCount || swl.win || swl.WinCount || 0, 10);
+        const sloss = parseInt(swl.loseCount || swl.lose || swl.LoseCount || 0, 10);
         const spc = parseInt(swl.playCount || swl.PlayCount || 0, 10) || swin + sloss;
-        const swr = swl.totalWinRate || (spc > 0 ? Math.round((swin / spc) * 100) : 0);
+        const swr = swl.winRate || (spc > 0 ? Math.round((swin / spc) * 100) : 0);
         els.stats.seasonRec.innerHTML = `${spc}전 <span style="color:#238636">${swin}승</span> <span style="color:#da3633">${sloss}패</span> (${swr}%)`;
 
-        // 기타 상세 스탯
+        // 기타 상세 스탯 (기존 DB 정보 우선)
         els.stats.totalCont.innerText = Number(basic.totalContribution || user.totalContribution || 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
         els.stats.combatCont.innerText = Number(basic.combatContribution || user.combatContribution || 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
         els.stats.combatRate.innerText = `${(basic.battleJoinRate || user.combatRate || 0)}%`;
@@ -404,6 +388,28 @@ async function selectUser(ano) {
         els.stats.avgGold.innerText = Number(basic.averageGetGold || user.avgGold || 0).toLocaleString();
 
         renderHeroList(detail);
+
+        // [2] 랭대 총전적 & 연승 정보만 "실시간"으로 받아오기 (비동기)
+        els.stats.totalRec.innerHTML = '<span class="loading-text">실시간 확인 중...</span>';
+        els.stats.consecutive.innerHTML = '<span class="loading-text">...</span>';
+
+        fetchAllRecord(ano, displayAno).then(summary => {
+            if (summary) {
+                // 파싱 예시: "486전 316승 170패 (65%) | 12연승"
+                const parts = summary.split('|');
+                els.stats.totalRec.innerHTML = parts[0].trim();
+                if (parts[1]) {
+                    const conStr = parts[1].trim();
+                    if (conStr.includes('연승')) els.stats.consecutive.innerHTML = `<span style="color:#3FB950; font-weight:bold;">${conStr}</span>`;
+                    else if (conStr.includes('연패')) els.stats.consecutive.innerHTML = `<span style="color:#FF4D4D; font-weight:bold;">${conStr}</span>`;
+                    else els.stats.consecutive.innerText = conStr;
+                }
+            } else {
+                // 실시간 실패 시 DB에 기존 정보가 있으면 표시, 없으면 데이터 없음
+                els.stats.totalRec.innerText = detail.rank_all_wl || '데이터 없음';
+                els.stats.consecutive.innerText = detail.winLoseTendency || '---';
+            }
+        });
     }
 }
 
