@@ -85,7 +85,11 @@ function findWL(obj) {
 
 async function fetchAllRecord(ano, rawAno) {
     const target = rawAno || ano;
-    const url = `${GAME_API}?ano=${target}&recordType=1&year=0&seasonNo=0&characterNo=0&tabType=A`;
+    const rawUrl = `${GAME_API}?ano=${target}&recordType=1&year=0&seasonNo=0&characterNo=0&tabType=A`;
+    // GitHub Pages (https)에서는 HTTP 요청이 막히므로 CORS 프록시 사용
+    const url = location.protocol === 'https:'
+        ? `https://corsproxy.io/?${encodeURIComponent(rawUrl)}`
+        : rawUrl;
     try {
         const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
         if (!res.ok) return null;
