@@ -85,7 +85,7 @@ function findWL(obj) {
 
 async function fetchAllRecord(ano, rawAno) {
     const dbInfo = userDetails[String(rawAno || ano)] || userDetails[rawAno || ano] || {};
-    return dbInfo.rank_season_wl || null;
+    return dbInfo.rank_all_wl || null;
 }
 
 // 구버전 /api/rankinfo 삭제 - 위의 직접 fetch 버전 사용
@@ -327,13 +327,14 @@ async function selectUser(ano) {
     els.stats.consecutive.innerHTML = `<span style="color:#888;">...</span>`;
     const rawAno = user ? String(user.userANO || user.ano) : ano;
     fetchAllRecord(ano, rawAno).then(wl => {
-        if (wl && typeof wl === 'object') {
+        if (wl && typeof wl === 'object' && Object.keys(wl).length > 0) {
             const awin = parseInt(wl.totalWinCount || wl.WinCount || wl.winCount || 0, 10);
             const aloss = parseInt(wl.totalLoseCount || wl.LoseCount || wl.loseCount || 0, 10);
-            const apc = parseInt(wl.playCount || wl.play_Count || wl.PlayCount || 0, 10) || awin + aloss;
-            const awr = wl.totalWinRate || wl.WinRate_InclDisc || wl.winRate || 0;
-            const awrStr = awr ? String(awr).replace('%', '').split('.')[0] : (apc > 0 ? Math.round((awin / apc) * 100) : 0);
+            const apc = parseInt(wl.playCount || wl.playCount_InclDisc || 0, 10) || (awin + aloss);
+            const awrStr = wl.totalWinRate || (apc > 0 ? Math.round((awin / apc) * 100).toString() : "0");
+
             els.stats.totalRec.innerHTML = `${apc}전 <span style="color:#238636">${awin}승</span> <span style="color:#da3633">${aloss}패</span> (${awrStr}%)`;
+
             // 연승/연패
             const con = parseInt(wl.consecutiveWinLose || wl.con_winlose || 0, 10);
             let conStr;
@@ -343,6 +344,7 @@ async function selectUser(ano) {
             els.stats.consecutive.innerHTML = conStr;
         } else {
             els.stats.totalRec.innerHTML = `<span style="color:#888; font-style:italic;">데이터 없음</span>`;
+            els.stats.consecutive.innerHTML = `<span style="color:#888;">---</span>`;
         }
     });
     // 랭대 총전적은 위 fetchAllRecord Promise에서 비동기 처리됨
