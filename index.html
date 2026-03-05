@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>V82 Premium Stats Viewer | Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <div class="profile-card">
+        <div class="user-info">
+          <h1 id="user-nickname">닉네임: ---</h1>
+          <div class="user-meta">
+            <span class="ano-tag" id="user-ano">ANO: 02292</span>
+            <span class="grade-tag" id="user-grade">등급: ---</span>
+          </div>
+          <div class="hero-list" id="hero-list" style="margin-top: 15px; max-width: 600px;">
+            <!-- Heroes injected by JS -->
+          </div>
+        </div>
+        <div class="rank-badge" style="display: flex; align-items: baseline; gap: 25px;">
+          <div>
+            <div class="rank-title">시즌 순위</div>
+            <div class="rank-value" id="user-rank">---위</div>
+          </div>
+          <div>
+            <div class="rank-title">승률</div>
+            <div class="rank-value" id="user-season-wr" style="color: var(--gold);">---%</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="search-container">
+      <input type="text" id="search-input" placeholder="닉네임 또는 ANO 검색..." autocomplete="off">
+      <div id="pagination-top" class="pagination-area"></div>
+    </div>
+
+    <main class="dashboard-grid">
+      <!-- Sidebar stats -->
+      <aside class="left-panel">
+        <div class="card">
+          <h2 class="card-title">Detailed Information</h2>
+          <div id="stats-container">
+            <div class="stat-row"><span class="stat-label">닉네임</span><span class="stat-value" id="stat-nick">---</span>
+            </div>
+            <div class="stat-row"><span class="stat-label">ANO</span><span class="stat-value" id="stat-ano-val"
+                style="color: var(--accent-blue)">---</span></div>
+            <div class="stat-row"><span class="stat-label">랭대 총전적</span><span class="stat-value"
+                id="stat-total-rec">---</span></div>
+            <div class="stat-row"><span class="stat-label">시즌 전적</span><span class="stat-value"
+                id="stat-season-rec">---</span></div>
+            <div class="stat-row"><span class="stat-label">현재 연승/연패</span><span class="stat-value"
+                id="stat-consecutive">---</span></div>
+            <div class="stat-row"><span class="stat-label">총 기여도</span><span class="stat-value"
+                id="stat-total-cont">---</span></div>
+            <div class="stat-row"><span class="stat-label">전투 기여도</span><span class="stat-value"
+                id="stat-combat-cont">---</span></div>
+            <div class="stat-row"><span class="stat-label">전투 참여율</span><span class="stat-value"
+                id="stat-combat-rate">---</span></div>
+            <div class="stat-row"><span class="stat-label">평균 레벨</span><span class="stat-value"
+                id="stat-avg-lv">---</span></div>
+            <div class="stat-row"><span class="stat-label">평균 KDA</span><span class="stat-value" id="stat-kda"
+                style="color:#58A6FF">---</span></div>
+            <div class="stat-row"><span class="stat-label">평균 디스펠</span><span class="stat-value"
+                id="stat-avg-dispell">---</span></div>
+            <div class="stat-row"><span class="stat-label">평균 포션</span><span class="stat-value"
+                id="stat-avg-potion">---</span></div>
+            <div class="stat-row"><span class="stat-label">평균 골드 획득</span><span class="stat-value" id="stat-avg-gold"
+                style="color:#D29922">---</span></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main ranking table -->
+      <section class="right-panel">
+        <div class="card" style="min-height: 600px;">
+          <h2 class="card-title">Season Rankings</h2>
+          <div style="overflow-x: auto;">
+            <table class="ranking-table">
+              <thead>
+                <tr>
+                  <th data-sort="rank" style="cursor:pointer; user-select:none;">순위 ↕</th>
+                  <th data-sort="nick" style="cursor:pointer; user-select:none;">닉네임 ↕</th>
+                  <th style="width:220px; text-align:center;">선호 영웅</th>
+                  <th data-sort="grade" style="cursor:pointer; user-select:none; width:120px; padding-left:20px;">등급 ↕
+                  </th>
+                  <th data-sort="wr" style="cursor:pointer; user-select:none; width:180px;">전적 (승률) ↕</th>
+                  <th style="width:100px;">ANO</th>
+                </tr>
+              </thead>
+              <tbody id="ranking-body">
+                <!-- Rows injected by JS -->
+              </tbody>
+            </table>
+          </div>
+          <div id="pagination" style="display:flex; justify-content:center; gap:10px; margin-top:20px;">
+            <!-- Pagination injected by JS -->
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js?v=2"></script>
+</body>
+
+</html>
