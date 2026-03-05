@@ -72,58 +72,58 @@ const els = {
 // 랭대 총전적(tabType=A) - 게임 서버에 직접 fetch (Python 서버 불필요)
 const GAME_API = 'http://www.chaosonline.co.kr:8081/ClientJson/RecordInfo.aspx';
 
-// 데이터 포맷팅: { totalWinCount: 5456, ... } -> "8484전 5456승 3020패 (64%) | 1연승"
-function formatWL(item) {
-    if (!item || typeof item !== 'object') return null;
-    const win = parseInt(item.totalWinCount || item.WinCount || item.winCount || 0, 10);
-    const loss = parseInt(item.totalLoseCount || item.LoseCount || item.loseCount || 0, 10);
-    const draw = parseInt(item.totalDrawCount || item.DrawCount || 0, 10);
-    const pc = parseInt(item.playCount || item.PlayCount || 0, 10) || (win + loss + draw);
-    const wr = item.totalWinRate || (pc > 0 ? Math.round((win / pc) * 100) : 0);
-    const con = parseInt(item.consecutiveWinLose || item.con_winlose || 0, 10);
+// 최신 전적 필드 병합 및 포맷팅
+function formatWLMerged(items) {
+    if (!Array.isArray(items)) items = [items];
+    let data = { win: 0, loss: 0, draw: 0, pc: 0, wr: 0, con: 0 };
+    let foundAny = false;
 
+    for (const item of items) {
+        if (!item || typeof item !== 'object') continue;
+        const w = parseInt(item.totalWinCount || item.WinCount || item.winCount || 0, 10);
+        const l = parseInt(item.totalLoseCount || item.LoseCount || item.loseCount || 0, 10);
+        const d = parseInt(item.totalDrawCount || item.DrawCount || 0, 10);
+        const p = parseInt(item.playCount || item.PlayCount || 0, 10);
+        const c = parseInt(item.consecutiveWinLose || item.con_winlose || 0, 10);
+
+        if (w > 0 || l > 0 || p > 0) {
+            data.win = Math.max(data.win, w);
+            data.loss = Math.max(data.loss, l);
+            data.draw = Math.max(data.draw, d);
+            data.pc = Math.max(data.pc, p, w + l + d);
+            foundAny = true;
+        }
+        if (c !== 0) data.con = c;
+    }
+
+    if (!foundAny && data.con === 0) return null;
+
+    const wr = (data.pc > 0) ? Math.round((data.win / data.pc) * 100) : 0;
     let conStr = "---";
-    if (con > 0) conStr = `${con}연승`;
-    else if (con < 0) conStr = `${Math.abs(con)}연패`;
+    if (data.con > 0) conStr = `${data.con}연승`;
+    else if (data.con < 0) conStr = `${Math.abs(data.con)}연패`;
 
-    return `${pc}전 ${win}승 ${loss}패 (${wr}%) | ${conStr}`;
+    return `${data.pc}전 ${data.win}승 ${data.loss}패 (${wr}%) | ${conStr}`;
 }
 
-// 재귀적으로 데이터 뭉치 찾기
-function findAndFormatWL(obj) {
-    if (!obj || typeof obj !== 'object') return null;
-
-    // 만약 현재 객체에 전적 관련 핵심 필드가 있다면 바로 포맷팅
-    if ('totalWinCount' in obj || 'WinCount' in obj || 'winCount' in obj) {
-        return formatWL(obj);
-    }
-
+// 모든 객체 수집
+function collectAllObjects(obj, results = []) {
+    if (!obj || typeof obj !== 'object') return results;
+    results.push(obj);
     if (Array.isArray(obj)) {
-        for (const item of obj) {
-            const r = findAndFormatWL(item);
-            if (r) return r;
-        }
+        for (const i of obj) collectAllObjects(i, results);
     } else {
-        // winLoseTendency 필드가 있으면 그 안을 먼저 탐색
-        if ('winLoseTendency' in obj) {
-            const r = findAndFormatWL(obj.winLoseTendency);
-            if (r) return r;
-        }
-        // 자식 노드들 탐색
         for (const v of Object.values(obj)) {
-            const r = findAndFormatWL(v);
-            if (r) return r;
+            if (typeof v === 'object') collectAllObjects(v, results);
         }
     }
-    return null;
+    return results;
 }
 
 async function fetchAllRecord(ano, rawAno) {
     const targetAno = String(rawAno || ano);
     const dbInfo = userDetails[targetAno] || {};
     if (dbInfo.rank_all_wl) return dbInfo.rank_all_wl;
-
-    console.log(`Real-time fetch for ${targetAno}`);
 
     const targetUrl = GAME_API + '?tabType=A&ano=' + targetAno;
     const isLocal = window.location.protocol === 'http:';
@@ -138,28 +138,27 @@ async function fetchAllRecord(ano, rawAno) {
             let content = data.contents || data;
 
             if (typeof content === 'string' && content.length > 50) {
-                // winLoseTendency 영역 추출 (배열 또는 객체)
+                // winLoseTendency 또는 전체 데이터 블록 추출
                 const wlMatch = content.match(/winLoseTendency\s*:\s*([\[\{][^]*?[\]\}])/);
-                if (wlMatch && wlMatch[1]) {
-                    const rawStr = wlMatch[1].trim();
-                    let parsedData = null;
-                    try {
-                        // 1. 보정된 JSON 파싱 시도
-                        const fixedJson = rawStr
-                            .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
-                            .replace(/:\s*'([^']*)'/g, ':"$1"')
-                            .replace(/,\s*([\]\}])/g, '$1');
-                        parsedData = JSON.parse(fixedJson);
-                    } catch (e) {
-                        try { parsedData = eval('(' + rawStr + ')'); } catch (e2) { }
-                    }
+                const rawStr = wlMatch ? wlMatch[1] : content;
 
-                    if (parsedData) {
-                        const summary = findAndFormatWL(parsedData);
-                        if (summary) {
-                            console.log(`✓ Real-time Success: ${summary}`);
-                            return summary;
-                        }
+                let parsedData = null;
+                try {
+                    const fixedJson = rawStr.trim()
+                        .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
+                        .replace(/:\s*'([^']*)'/g, ':"$1"')
+                        .replace(/,\s*([\]\}])/g, '$1');
+                    parsedData = JSON.parse(fixedJson);
+                } catch (e) {
+                    try { parsedData = eval('(' + (rawStr.includes('{') ? rawStr : '{' + rawStr + '}') + ')'); } catch (e2) { }
+                }
+
+                if (parsedData) {
+                    const allObjs = collectAllObjects(parsedData);
+                    const summary = formatWLMerged(allObjs);
+                    if (summary) {
+                        console.log(`✓ Real-time Success: ${summary}`);
+                        return summary;
                     }
                 }
             }
