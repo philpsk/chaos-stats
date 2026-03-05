@@ -86,43 +86,59 @@ function findWL(obj) {
 
 async function fetchAllRecord(ano, rawAno) {
     const targetAno = String(rawAno || ano);
-
-    // 0. 상세 정보 DB가 있다면 거기서 연승/연패 정보가 있을 수 있으므로 먼저 확인
     const dbInfo = userDetails[targetAno] || {};
     if (dbInfo.rank_all_wl) return dbInfo.rank_all_wl;
 
     console.log(`Real-time fetch (Total & Streak) for ANO: ${targetAno}`);
 
     const targetUrl = GAME_API + '?tabType=A&ano=' + targetAno;
-    const proxies = [
-        `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`,
-        `https://thingproxy.freeboard.io/fetch/${targetUrl}`,
-        `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
-    ];
+    const isLocal = window.location.protocol === 'http:';
 
-    for (const p of proxies) {
+    // 시도할 경로 목록: 로컬이면 직접 호출 우선, HTTPS면 프록시만
+    const attemptUrls = [];
+    if (isLocal) attemptUrls.push(targetUrl); // 로컬(HTTP)은 직접 호출 가능 (CORS 오픈됨)
+
+    attemptUrls.push(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+    attemptUrls.push(`https://thingproxy.freeboard.io/fetch/${targetUrl}`);
+    attemptUrls.push(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
+
+    for (const url of attemptUrls) {
         try {
-            const res = await fetch(p, { signal: AbortSignal.timeout(5000) });
+            console.log(`Trying: ${url}`);
+            const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
             const data = await res.json();
-            const content = data.contents || data; // allorigins는 contents에 넣어서 줌
+            let content = data.contents || data; // allorigins는 contents에 담아줌
 
             if (typeof content === 'string' && content.length > 50) {
-                // 실시간 전적 및 연승 연패 정규식 추출
-                const wlMatch = content.match(/winLoseTendency\s*:\s*(\[[^\]]*\])/);
+                // [핵심] 비표준 JSON (따옴표 없는 키) 추출 및 보정 파싱
+                const wlMatch = content.match(/winLoseTendency\s*:\s*(\[[^]*?\])/);
                 if (wlMatch && wlMatch[1]) {
-                    const wlData = JSON.parse(wlMatch[1]);
-                    // wlData[0] 등에 "15연승", "7연패" 또는 전적 정보가 들어있음
-                    // 사용자가 원하는 "랭대총전적"과 "연승연패" 데이터 반환
-                    const summary = findWL(wlData);
-                    if (summary) {
-                        console.log(`✓ Real-time Success (${targetAno}): ${summary}`);
-                        return summary;
+                    let rawListStr = wlMatch[1];
+                    try {
+                        // Loose JSON -> Strict JSON 변환 (키에 따옴표 붙이기)
+                        const fixedJson = rawListStr
+                            .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":') // 키에 따옴표
+                            .replace(/:\s*'([^']*)'/g, ':"$1"'); // 값에 홑따옴표를 쌍따옴표로
+
+                        const wlData = JSON.parse(fixedJson);
+                        const summary = findWL(wlData);
+                        if (summary) {
+                            console.log(`✓ Real-time Success: ${summary}`);
+                            return summary;
+                        }
+                    } catch (parseErr) {
+                        console.warn("JSON Parse failed, trying eval fallback...");
+                        // 정 안되면 eval (비표준 데이터이므로)
+                        try {
+                            const wlData = eval('(' + rawListStr + ')');
+                            const summary = findWL(wlData);
+                            if (summary) return summary;
+                        } catch (e) { }
                     }
                 }
             }
         } catch (e) {
-            console.warn(`Proxy ${p} failed:`, e.message);
-            continue;
+            console.warn(`Attempt failed (${url}):`, e.message);
         }
     }
     return null;
