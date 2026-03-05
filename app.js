@@ -86,14 +86,25 @@ function findWL(obj) {
 async function fetchAllRecord(ano, rawAno) {
     const target = rawAno || ano;
     const rawUrl = `${GAME_API}?ano=${target}&recordType=1&year=0&seasonNo=0&characterNo=0&tabType=A`;
-    // GitHub Pages (https)에서는 HTTP 요청이 막히므로 CORS 프록시 사용
+    // GitHub Pages (https)에서는 HTTP 요청이 막히므로 CORS 프록시 사용 (allorigins)
     const url = location.protocol === 'https:'
-        ? `https://corsproxy.io/?${encodeURIComponent(rawUrl)}`
+        ? `https://api.allorigins.win/get?url=${encodeURIComponent(rawUrl)}`
         : rawUrl;
     try {
         const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
         if (!res.ok) return null;
-        const rawText = await res.text();
+        let rawText = await res.text();
+
+        // allorigins 프록시의 경우 JSON으로 래핑됨
+        if (url.includes('allorigins')) {
+            try {
+                const proxyData = JSON.parse(rawText);
+                if (proxyData && proxyData.contents) {
+                    rawText = proxyData.contents;
+                }
+            } catch (e) { }
+        }
+
         const s = rawText.indexOf('{');
         const e = rawText.lastIndexOf('}');
         if (s === -1 || e <= s) return null;
