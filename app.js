@@ -366,10 +366,42 @@ async function fetchAllRecord(ano, rawAno) {
 
     console.log(`Real-time fetch (Total & Streak) for ANO: ${targetAno}`);
 
+    // ★ 1순위: 사용자 파이썬 서버가 수집해서 같이 올린 cache 폴더 내 JSON 정적 파일 우선 조회
+    try {
+        const cacheUrl = `cache/${targetAno}_realtime.json?_t=${Date.now()}`;
+        console.log(`Checking local/github cache first: ${cacheUrl}`);
+        const cacheRes = await fetch(cacheUrl, { signal: AbortSignal.timeout(3000) });
+        if (cacheRes.ok) {
+            const cacheContent = await cacheRes.text();
+            if (cacheContent && cacheContent.includes('winLoseTendency')) {
+                const wlMatch = cacheContent.match(/winLoseTendency\s*:\s*([\[\{][^]*?[\]\}])/);
+                if (wlMatch && wlMatch[1]) {
+                    const rawStr = wlMatch[1].trim();
+                    let parsedData = null;
+                    try {
+                        const fixedJson = rawStr.replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":').replace(/:\s*'([^']*)'/g, ':"$1"').replace(/,\s*([\]\}])/g, '$1');
+                        parsedData = JSON.parse(fixedJson);
+                    } catch (e) {
+                        try { parsedData = eval('(' + (rawStr.startsWith('[') || rawStr.startsWith('{') ? rawStr : '{' + rawStr + '}') + ')'); } catch (e2) { }
+                    }
+                    if (parsedData) {
+                        const summary = formatWLMerged(collectAllObjects(parsedData));
+                        if (summary) {
+                            console.log(`✓ Success via Static Cache!`);
+                            return summary;
+                        }
+                    }
+                }
+            }
+        }
+    } catch (err) {
+        console.log("No static cache found, falling back to proxies.");
+    }
+
     const targetUrl = GAME_API + '?tabType=A&ano=' + targetAno;
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-    // 프록시 다변화 배열 구성
+    // 2순위: 프록시 다변화 배열 구성
     const attemptUrls = [];
     if (isLocal) {
         attemptUrls.push(`/api/record?ano=${targetAno}`); // 사용자 아이디어 통합 로컬 프록시 API
