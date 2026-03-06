@@ -367,15 +367,18 @@ async function fetchAllRecord(ano, rawAno) {
     console.log(`Real-time fetch (Total & Streak) for ANO: ${targetAno}`);
 
     const targetUrl = GAME_API + '?tabType=A&ano=' + targetAno;
-    const isLocal = window.location.protocol === 'http:';
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
     // 프록시 다변화 배열 구성
     const attemptUrls = [];
-    if (isLocal) attemptUrls.push(targetUrl);
-    attemptUrls.push(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
-    attemptUrls.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
-    attemptUrls.push(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
-    attemptUrls.push(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`);
+    if (isLocal) {
+        attemptUrls.push(`/api/record?ano=${targetAno}`); // 사용자 아이디어 통합 로컬 프록시 API
+    } else {
+        attemptUrls.push(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+        attemptUrls.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+        attemptUrls.push(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
+        attemptUrls.push(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`);
+    }
 
     // 단일 프록시 요청 처리 핸들러 (타임아웃 8초)
     const fetchSingleProxy = async (url) => {
