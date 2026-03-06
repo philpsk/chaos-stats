@@ -58,7 +58,7 @@ function updateColor(id, color) {
     if (el) el.style.color = color;
 }
 
-// 필드 추출기 (대소문자 무시용 후보군)
+// 필드 추출기
 function findVal(obj, keys) {
     if (!obj) return null;
     for (let k of keys) {
@@ -82,7 +82,7 @@ async function init() {
         document.querySelectorAll('th[data-sort]').forEach(th => {
             th.addEventListener('click', () => sortData(th.dataset.sort));
         });
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Init failed", e); }
 }
 
 function handleSearch() {
@@ -128,17 +128,12 @@ function renderTable() {
         const norm = normalizeAno(ano);
         const nick = u.nick || u.nickname || "Unknown";
         const grade = u.gradeName || u.grade || "---";
-
-        // 필드명 수정 (WinCount, LoseCount 준수)
         const win = parseInt(findVal(u, ['WinCount', 'winCount', 'win']) || 0, 10);
         const loss = parseInt(findVal(u, ['LoseCount', 'loseCount', 'lose']) || 0, 10);
-
-        // 승률 계산 시 필드에 이미 있는 값 우선 사용하되 없으면 계산
         let wrRaw = findVal(u, ['WinRate_InclDisc', 'winRate']);
         let wr = 0;
         if (wrRaw) wr = String(wrRaw).replace('%', '');
         else wr = (win + loss) > 0 ? ((win / (win + loss)) * 100).toFixed(1) : 0;
-
         const rank = u.RTRank || u.rank || "---";
         const detail = userDetails[norm] || {};
         const heroes = u.characterList || detail.characterList || [];
@@ -171,28 +166,25 @@ async function selectUser(ano) {
         const nHistory = (detail.nickHistory || []).map(n => String(n).trim()).filter(n => n && n !== "Unknown" && n !== curNick);
         const unique = [...new Set(nHistory)];
         const prevText = unique.length > 0 ? ` (전: ${unique.join(', ')})` : "";
-
         updateText('user-nickname', `닉네임: ${curNick}${prevText}`);
         updateText('user-ano', `ANO: ${user.userANO || user.ano || ano}`);
         updateText('user-grade', `등급: ${user.gradeName || user.grade || '---'} ${user.gradeLevel || ''}`);
         updateColor('user-grade', getGradeColor(user.gradeName || user.grade));
         updateText('user-rank', `${user.RTRank || user.rank || '---'}위`);
-
         updateText('stat-nick', curNick);
         updateText('stat-prev-nicks', unique.join(', ') || '---');
         updateText('stat-ano-val', user.userANO || user.ano || ano);
     } catch (e) { console.error(e); }
 
     try {
-        const w = parseInt(findVal(user, ['WinCount', 'winCount', 'win']) || swl.totalWinCount || 0, 10);
-        const l = parseInt(findVal(user, ['LoseCount', 'loseCount', 'lose']) || swl.totalLoseCount || 0, 10);
-        const p = parseInt(findVal(user, ['playCount', 'PlayCount']) || swl.playCount || (w + l) || 1, 10);
-
+        // [수정] 모든 전적 데이터 추출 시 명시적으로 숫자로 변환하여 문자열 결합 방지
+        const w = Number(findVal(user, ['WinCount', 'winCount', 'win']) || swl.totalWinCount || 0);
+        const l = Number(findVal(user, ['LoseCount', 'loseCount', 'lose']) || swl.totalLoseCount || 0);
+        const p = Number(findVal(user, ['playCount', 'PlayCount']) || swl.playCount || (w + l) || 1);
         let wrRaw = findVal(user, ['WinRate_InclDisc', 'winRate']) || swl.totalWinRate;
         let wr = 0;
         if (wrRaw) wr = String(wrRaw).replace('%', '');
         else wr = Math.round((w / p) * 100);
-
         updateHtml('stat-season-rec', `${p}전 <span style="color:#238636">${w}승</span> <span style="color:#da3633">${l}패</span> (${wr}%)`);
         updateText('user-season-wr', `${wr}%`);
     } catch (e) { console.error(e); }
@@ -204,7 +196,6 @@ async function selectUser(ano) {
         const lv = findVal(basic, ['averageCharacterLevel']) || findVal(user, ['lastLevelAvg', 'avgLevel']) || 0;
         const kda = findVal(user, ['killDieAssistRate']) || detail.kda || 0;
         const gold = findVal(basic, ['averageGetGold']) || findVal(user, ['totalGoldAvg', 'avgGold']) || 0;
-
         updateText('stat-total-cont', Number(tc).toLocaleString());
         updateText('stat-combat-cont', Number(cc).toLocaleString());
         updateText('stat-combat-rate', `${cr}%`);
@@ -221,8 +212,12 @@ async function selectUser(ano) {
             const f = t.indexOf("{"), l = t.lastIndexOf("}");
             if (f !== -1 && l !== -1) {
                 const j = JSON.parse(t.substring(f, l + 1).replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":').replace(/:\s*'([^']*)'/g, ':"$1"').replace(/,\s*([\]\}])/g, '$1'));
-                const tw = j.winLoseTendency?.totalWinCount || 0, tl = j.winLoseTendency?.totalLoseCount || 0, tc = j.winLoseTendency?.consecutiveWinLose || 0;
-                updateHtml('stat-total-rec', `${tw + tl}전 ${tw}승 ${tl}패 (${Math.round(tw / (tw + tl || 1) * 100)}%)`);
+                // [수정] 실시간 전적 합산 시 확실하게 숫자로 변환하여 문자열 결합 방지
+                const tw = Number(j.winLoseTendency?.totalWinCount || 0);
+                const tl = Number(j.winLoseTendency?.totalLoseCount || 0);
+                const tc = Number(j.winLoseTendency?.consecutiveWinLose || 0);
+                const totalGames = tw + tl;
+                updateHtml('stat-total-rec', `${totalGames}전 ${tw}승 ${tl}패 (${Math.round(tw / (totalGames || 1) * 100)}%)`);
                 updateHtml('stat-consecutive', tc > 0 ? `<span style="color:#3FB950">${tc}연승</span>` : (tc < 0 ? `<span style="color:#FF4D4D">${Math.abs(tc)}연패</span>` : "---"));
             }
         }).catch(() => { updateText('stat-total-rec', '조회 실패'); });
