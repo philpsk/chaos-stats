@@ -189,7 +189,7 @@ function renderPagination() {
         return;
     }
 
-    const maxVisibleButtons = 5;
+    const maxVisibleButtons = 10;
     let startPage = Math.max(1, currentPage - Math.floor(maxVisibleButtons / 2));
     let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
 
