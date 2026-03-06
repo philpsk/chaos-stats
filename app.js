@@ -401,15 +401,13 @@ async function fetchAllRecord(ano, rawAno) {
     const targetUrl = GAME_API + '?tabType=A&ano=' + targetAno;
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-    // 2순위: 프록시 다변화 배열 구성
+    // 2순위: 프록시 다변화 배열 구성 (퍼블릭 프록시 전면 폐기)
     const attemptUrls = [];
     if (isLocal) {
-        attemptUrls.push(`/api/record?ano=${targetAno}`); // 사용자 아이디어 통합 로컬 프록시 API
+        attemptUrls.push(`/api/record?ano=${targetAno}`); // 로컬 전용 파이썬 구축 서버
     } else {
-        attemptUrls.push(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
-        attemptUrls.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
-        attemptUrls.push(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
-        attemptUrls.push(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`);
+        // 사용자 확인 결과, 모든 무료 우회 서버가 대상 사이트(chaosonline)에 대해 차단됨.
+        // 괜히 8초씩 기다리게 하지 않고 과감히 비워버려 즉각 '구버전' 렌더링으로 넘깁니다!
     }
 
     // 단일 프록시 요청 처리 핸들러 (타임아웃 8초)
