@@ -113,48 +113,7 @@ header {
   font-size: 0.8rem;
 }
 
-/* 검색창 및 페이징 레이아웃 */
-.search-container {
-  flex-shrink: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-  background: var(--card-bg);
-  padding: 6px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-}
 
-#search-input {
-  flex: 0 1 280px;
-  padding: 8px 14px;
-  background: var(--bg-color);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  color: white;
-  font-size: 0.9rem;
-  outline: none;
-  transition: all 0.2s;
-}
-
-#search-input:focus {
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 10px rgba(88, 166, 255, 0.2);
-  flex-basis: 340px;
-}
-
-#total-count {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 0.85rem;
-  font-weight: bold;
-  color: #58A6FF;
-  background: rgba(88, 166, 255, 0.15);
-  padding: 5px 12px;
-  border-radius: 20px;
-  border: 1px solid rgba(88, 166, 255, 0.3);
-  white-space: nowrap;
-}
 
 .loading-text {
   color: #8b949e;

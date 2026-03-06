@@ -56,7 +56,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(err)
 
 if __name__ == "__main__":
-    port = 8000
+    port = 8088
     print(f"[V82 Server] http://localhost:{port}  (CORS proxy + static)")
     server = http.server.HTTPServer(("", port), Handler)
     try:

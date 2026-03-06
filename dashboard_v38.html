@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>V82 Premium Stats Viewer | Dashboard</title>
+  <title>V88 FINAL - [16 확장 완료]</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -22,15 +22,19 @@
             <!-- Heroes injected by JS -->
           </div>
         </div>
-        <div class="rank-badge" style="display: flex; align-items: baseline; gap: 25px;">
-          <div>
-            <div class="rank-title">시즌 순위</div>
-            <div class="rank-value" id="user-rank">---위</div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 12px;">
+          <div class="rank-badge" style="display: flex; align-items: baseline; gap: 25px;">
+            <div style="text-align: right;">
+              <span style="font-size: 0.85rem; color: #8b949e; display: block; margin-bottom: 2px;">시즌 순위</span>
+              <span id="user-rank" style="font-size: 2.4rem; font-weight: 800; color: #ffa657;">--위</span>
+            </div>
+            <div style="text-align: right;">
+              <span style="font-size: 0.85rem; color: #8b949e; display: block; margin-bottom: 2px;">승률</span>
+              <span id="user-season-wr" style="font-size: 2.4rem; font-weight: 800; color: #ffa657;">--%</span>
+            </div>
           </div>
-          <div>
-            <div class="rank-title">승률</div>
-            <div class="rank-value" id="user-season-wr" style="color: var(--gold);">---%</div>
-          </div>
+          <!-- 상단 페이지네이션 (순위/승률 밑으로 이동) -->
+          <div id="pagination-top" style="display: flex; gap: 5px; align-items: center;"></div>
         </div>
       </div>
     </header>
@@ -73,20 +77,16 @@
 
       <!-- Main ranking table -->
       <section class="right-panel">
-        <div class="card" style="min-height: 600px;">
+        <div class="card" style="min-height: 600px; display: flex; flex-direction: column;">
           <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-            <h2 class="card-title" style="margin-bottom: 0;">Season Rankings</h2>
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <span id="total-count"
-                style="font-family: 'Roboto Mono', monospace; font-size: 0.8rem; color: var(--accent-blue); background: rgba(88, 166, 255, 0.1); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(88, 166, 255, 0.2);">검색
-                결과: 0명</span>
+            <h2 class="card-title" style="margin-bottom: 0; min-width: 150px;">Season Rankings</h2>
+            <div style="display: flex; align-items: center; gap: 15px; flex: 1; justify-content: flex-end;">
               <input type="text" id="search-input" placeholder="닉네임 또는 ANO 검색..." autocomplete="off"
-                style="padding: 7px 12px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; color: white; font-size: 0.85rem; width: 220px; outline: none;">
-              <div id="pagination-top" class="pagination-area"></div>
+                style="padding: 7px 15px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: white; font-size: 0.85rem; width: 220px; outline: none; border-color: var(--accent-blue);">
             </div>
           </div>
-          <div style="overflow-x: auto;">
+          <div style="overflow-x: auto; flex: 1;">
             <table class="ranking-table">
               <thead>
                 <tr>
@@ -107,12 +107,13 @@
           <div id="pagination" style="display:flex; justify-content:center; gap:10px; margin-top:20px;">
             <!-- Pagination injected by JS -->
           </div>
+          <div id="pagination-top" style="display:none;"></div>
         </div>
       </section>
     </main>
   </div>
 
-  <script src="app_v37.js?v=20260306_FINAL_FORCE"></script>
+  <script src="app_v38.js?v=20260306_FINAL_V38"></script>
 </body>
 
 </html>

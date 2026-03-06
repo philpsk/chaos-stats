@@ -193,9 +193,6 @@ function sortData(key) {
 }
 
 function renderTable() {
-    if (els.totalCount) {
-        els.totalCount.innerText = `검색 결과: ${filteredData.length}명`;
-    }
     const start = (currentPage - 1) * pageSize;
     const end = start + pageSize;
     const pageData = filteredData.slice(start, end);
@@ -215,11 +212,11 @@ function renderTable() {
         const charList = u.characterList || dbInfo.characterList || [];
 
         if (ano === pageData[0].userANO || ano === pageData[0].ano) { // 첫 번째 유저만 로그 찍기
-            console.log(`[DEBUG] ANO: ${ano}, Nick: ${nick}, charList:`, charList);
+            console.log(`[DEBUG] ANO: ${ano}, Nick: ${nick}, charList(Total): ${charList.length}, Displaying: ${Math.min(charList.length, 7)}`);
         }
         const heroIconsHtml = charList.slice(0, 7).map(c => {
             const cNo = c.characterNo || c;
-            return `<img src="img_hero/${cNo}.png" class="hero-mini-icon" alt="Hero ${cNo}">`;
+            return `<img src="img_hero/${cNo}.png" class="hero-mini-icon" onerror="this.src='img_hero/nop.png'" alt="Hero ${cNo}">`;
         }).join('');
 
         return `
@@ -494,12 +491,12 @@ async function selectUser(ano) {
                 const fallbackSummary = formatWLMerged(detail.rank_all_wl || detail.winLoseTendency || user);
                 if (fallbackSummary) {
                     const parts = fallbackSummary.split('|');
-                    els.stats.totalRec.innerHTML = `<span style="color:#A1A1AA">${parts[0].trim()} (구버전)</span>`;
-                    if (parts[1]) els.stats.consecutive.innerHTML = `<span style="color:#A1A1AA">${parts[1].trim()}</span>`;
+                    els.stats.totalRec.innerHTML = parts[0].trim();
+                    if (parts[1]) els.stats.consecutive.innerHTML = parts[1].trim();
                 } else {
                     const fallbackPlayCount = user.playCount || (swin + sloss);
-                    els.stats.totalRec.innerHTML = `<span style="color:#A1A1AA">${fallbackPlayCount}전 <span style="color:#238636">${swin}승</span> <span style="color:#da3633">${sloss}패</span> (${swr}%) (구버전)</span>`;
-                    els.stats.consecutive.innerHTML = `<span style="color:#A1A1AA">---</span>`;
+                    els.stats.totalRec.innerHTML = `${fallbackPlayCount}전 <span style="color:#238636">${swin}승</span> <span style="color:#da3633">${sloss}패</span> (${swr}%)`;
+                    els.stats.consecutive.innerHTML = `---`;
                 }
             }
         });
@@ -508,12 +505,12 @@ async function selectUser(ano) {
 
 function renderHeroList(detail) {
     const heroes = detail.characterList || [];
-    // 상단 프로필 영역 선호 영웅 (아이콘 7개로 변경)
+    // 상단 프로필 영역 선호 영웅 (아이콘 16개, 8x2 배열로 확장)
     els.heroList.innerHTML = `
-        <div style="font-size:0.85rem; color:var(--accent-blue); font-weight:700; margin-bottom:10px;">선호 영웅</div>
-        <div style="display:flex; gap:8px;">
-            ${(heroes.length > 0 ? heroes : []).slice(0, 7).map(h => {
-        return `<img src="img_hero/${h.characterNo}.png" class="hero-mini-icon" style="width:34px; height:34px;" alt="Hero ${h.characterNo}">`;
+        <div style="display:grid; grid-template-columns: repeat(8, 34px); gap:8px;">
+            ${(heroes.length > 0 ? heroes : []).slice(0, 16).map(h => {
+        const cNo = h.characterNo || h;
+        return `<img src="img_hero/${cNo}.png" class="hero-mini-icon" style="width:34px; height:34px;" onerror="this.src='img_hero/nop.png'" alt="Hero ${cNo}">`;
     }).join('')}
         </div>
     `;
