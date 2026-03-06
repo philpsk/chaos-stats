@@ -141,7 +141,8 @@ async function init() {
         });
 
         renderTable();
-        if (allData.length > 0) selectUser(allData[0].userANO || allData[0].ano);
+        // 첫 화면 로드 시 1등 유저 자동 선택 및 구글 서버 조회 방지
+        // if (allData.length > 0) selectUser(allData[0].userANO || allData[0].ano);
 
         els.searchInput.addEventListener('input', handleSearch);
 
