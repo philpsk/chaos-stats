@@ -73,38 +73,7 @@ const els = {
 const GAME_API = 'http://www.chaosonline.co.kr:8081/ClientJson/RecordInfo.aspx';
 
 // 최신 전적 필드 병합 및 포맷팅
-function formatWLMerged(items) {
-    if (!Array.isArray(items)) items = [items];
-    let data = { win: 0, loss: 0, draw: 0, pc: 0, wr: 0, con: 0 };
-    let foundAny = false;
-
-    for (const item of items) {
-        if (!item || typeof item !== 'object') continue;
-        const w = parseInt(item.totalWinCount || item.WinCount || item.winCount || 0, 10);
-        const l = parseInt(item.totalLoseCount || item.LoseCount || item.loseCount || 0, 10);
-        const d = parseInt(item.totalDrawCount || item.DrawCount || 0, 10);
-        const p = parseInt(item.playCount || item.PlayCount || 0, 10);
-        const c = parseInt(item.consecutiveWinLose || item.con_winlose || 0, 10);
-
-        if (w > 0 || l > 0 || p > 0) {
-            data.win = Math.max(data.win, w);
-            data.loss = Math.max(data.loss, l);
-            data.draw = Math.max(data.draw, d);
-            data.pc = Math.max(data.pc, p, w + l + d);
-            foundAny = true;
-        }
-        if (c !== 0) data.con = c;
-    }
-
-    if (!foundAny && data.con === 0) return null;
-
-    const wr = (data.pc > 0) ? Math.round((data.win / data.pc) * 100) : 0;
-    let conStr = "---";
-    if (data.con > 0) conStr = `${data.con}연승`;
-    else if (data.con < 0) conStr = `${Math.abs(data.con)}연패`;
-
-    return `${data.pc}전 ${data.win}승 ${data.loss}패 (${wr}%) (구버전) | ${conStr}`;
-}
+// formatWLMerged 함수 중복 제거 (파일 하단의 통합 버전 사용)
 
 // 모든 객체 수집
 function collectAllObjects(obj, results = []) {
@@ -123,22 +92,30 @@ function collectAllObjects(obj, results = []) {
 // 구버전 /api/rankinfo 삭제 - 위의 직접 fetch 버전 사용
 
 async function init() {
+    console.log("Dashboard Init Starting...");
     try {
         const t = Date.now();
         const [rankRes, dbRes] = await Promise.all([
-            fetch(`V88_FINAL_RANK_DEEP.json?t=${t}`).catch(() => ({ json: () => [] })),
-            fetch(`DB.json?t=${t}`).catch(() => ({ json: () => ({}) }))
+            fetch(`V88_FINAL_RANK_DEEP.json?t=${t}`).catch(() => ({ ok: false, json: () => [] })),
+            fetch(`DB.json?t=${t}`).catch(() => ({ ok: false, json: () => ({}) }))
         ]);
 
-        allData = await rankRes.json();
-        userDetails = await dbRes.json();
-        filteredData = [...allData];
+        if (rankRes && rankRes.ok) {
+            allData = await rankRes.json();
+        } else {
+            console.error("V88 JSON Load Failed");
+            allData = [];
+        }
 
-        console.log("Data Loaded:", {
-            rankSummary: allData.length,
-            dbSummary: Object.keys(userDetails).length,
-            sample: userDetails['2489'] ? "덕구 있음" : "덕구 없음"
-        });
+        if (dbRes && dbRes.ok) {
+            userDetails = await dbRes.json();
+        } else {
+            console.error("DB JSON Load Failed");
+            userDetails = {};
+        }
+
+        filteredData = [...allData];
+        console.log("Filtered Data Prepared:", filteredData.length);
 
         renderTable();
         // 첫 화면 로드 시 1등 유저 자동 선택 및 구글 서버 조회 방지
@@ -514,7 +491,8 @@ async function selectUser(ano) {
                     els.stats.totalRec.innerHTML = `<span style="color:#A1A1AA">${parts[0].trim()} (구버전)</span>`;
                     if (parts[1]) els.stats.consecutive.innerHTML = `<span style="color:#A1A1AA">${parts[1].trim()}</span>`;
                 } else {
-                    els.stats.totalRec.innerHTML = `<span style="color:#A1A1AA">${user.playCount || swin + sloss}전 <span style="color:#238636">${swin}승</span> <span style="color:#da3633">${sloss}패</span> (${swr}%) (구버전)</span>`;
+                    const fallbackPlayCount = user.playCount || (swin + sloss);
+                    els.stats.totalRec.innerHTML = `<span style="color:#A1A1AA">${fallbackPlayCount}전 <span style="color:#238636">${swin}승</span> <span style="color:#da3633">${sloss}패</span> (${swr}%) (구버전)</span>`;
                     els.stats.consecutive.innerHTML = `<span style="color:#A1A1AA">---</span>`;
                 }
             }
