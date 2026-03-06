@@ -342,7 +342,7 @@ async function fetchAllRecord(ano, rawAno) {
     try {
         const cacheUrl = `cache/${targetAno}_realtime.json?_t=${Date.now()}`;
         console.log(`Checking local/github cache first: ${cacheUrl}`);
-        const cacheRes = await fetch(cacheUrl, { signal: AbortSignal.timeout(3000) });
+        const cacheRes = await fetch(cacheUrl, { signal: AbortSignal.timeout(1500) }); // 타임아웃 3초 -> 1.5초 단축
         if (cacheRes.ok) {
             const cacheContent = await cacheRes.text();
             const parsedData = parseChaosJson(cacheContent);
@@ -367,10 +367,15 @@ async function fetchAllRecord(ano, rawAno) {
 
     const attemptUrls = [];
     if (isLocal) {
-        attemptUrls.push(`/api/record?ano=${targetAno}`); // 로컬 전용 파이썬 구축 서버
+        attemptUrls.push(`/api/record?ano=${targetAno}`); // 제일 빠른 로컬 파이썬 서버
     } else {
-        // 일반 접속자는 무적의 클라우드 전용 서버로 요청합니다. (개발 전엔 NameNotResolved로 바로 실패하여 딜레이 0초)
+        // [속도 최적화] GAS 서버의 초기 딜레이(2~3초)를 극복하기 위해 가장 강력한 public 프록시들을 동시 출격(레이싱)시킵니다.
+        // 먼저 도착하는 응답(보통 0.5초 이내)을 그대로 화면에 먼저 꽂아 넣습니다!
         if (WORKER_URL) attemptUrls.push(`${WORKER_URL}?ano=${targetAno}`);
+
+        const bypassCacheUrl = targetUrl + '&_t=' + Date.now();
+        attemptUrls.push(`https://api.allorigins.win/get?url=${encodeURIComponent(bypassCacheUrl)}`);
+        attemptUrls.push(`https://api.codetabs.com/v1/proxy?quest=${bypassCacheUrl}`);
     }
 
     // 단일 프록시 요청 처리 핸들러 (타임아웃 8초)
