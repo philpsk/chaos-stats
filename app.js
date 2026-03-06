@@ -532,11 +532,16 @@ async function selectUser(ano) {
                     else els.stats.consecutive.innerText = conStr;
                 }
             } else {
-                // 실패 시에만 기존 데이터 표시
-                const fallbackTotalRec = detail.rank_all_wl || `${user.playCount || swin + sloss}전 ${swin}승 ${sloss}패 (${swr}%)`;
-                const fallbackCon = detail.winLoseTendency || '---';
-                els.stats.totalRec.innerText = fallbackTotalRec;
-                els.stats.consecutive.innerText = fallbackCon;
+                // 실시간 통신 모두 실패 시, 로컬 DB 내 객체를 포맷터로 우선 처리하여 (오프라인) 표기
+                const fallbackSummary = formatWLMerged(detail.rank_all_wl || detail.winLoseTendency || user);
+                if (fallbackSummary) {
+                    const parts = fallbackSummary.split('|');
+                    els.stats.totalRec.innerHTML = `<span style="color:#A1A1AA">${parts[0].trim()} (구버전)</span>`;
+                    if (parts[1]) els.stats.consecutive.innerHTML = `<span style="color:#A1A1AA">${parts[1].trim()}</span>`;
+                } else {
+                    els.stats.totalRec.innerHTML = `<span style="color:#A1A1AA">${user.playCount || swin + sloss}전 <span style="color:#238636">${swin}승</span> <span style="color:#da3633">${sloss}패</span> (${swr}%) (구버전)</span>`;
+                    els.stats.consecutive.innerHTML = `<span style="color:#A1A1AA">---</span>`;
+                }
             }
         });
     }
