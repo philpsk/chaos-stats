@@ -120,55 +120,6 @@ function collectAllObjects(obj, results = []) {
     return results;
 }
 
-async function fetchAllRecord(ano, rawAno) {
-    const targetAno = String(rawAno || ano);
-    const dbInfo = userDetails[targetAno] || {};
-    if (dbInfo.rank_all_wl) return dbInfo.rank_all_wl;
-
-    const targetUrl = GAME_API + '?tabType=A&ano=' + targetAno;
-    const isLocal = window.location.protocol === 'http:';
-    const attemptUrls = [];
-    if (isLocal) attemptUrls.push(targetUrl);
-    attemptUrls.push(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
-
-    for (const url of attemptUrls) {
-        try {
-            const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
-            const data = await res.json();
-            let content = data.contents || data;
-
-            if (typeof content === 'string' && content.length > 50) {
-                // winLoseTendency 또는 전체 데이터 블록 추출
-                const wlMatch = content.match(/winLoseTendency\s*:\s*([\[\{][^]*?[\]\}])/);
-                const rawStr = wlMatch ? wlMatch[1] : content;
-
-                let parsedData = null;
-                try {
-                    const fixedJson = rawStr.trim()
-                        .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
-                        .replace(/:\s*'([^']*)'/g, ':"$1"')
-                        .replace(/,\s*([\]\}])/g, '$1');
-                    parsedData = JSON.parse(fixedJson);
-                } catch (e) {
-                    try { parsedData = eval('(' + (rawStr.includes('{') ? rawStr : '{' + rawStr + '}') + ')'); } catch (e2) { }
-                }
-
-                if (parsedData) {
-                    const allObjs = collectAllObjects(parsedData);
-                    const summary = formatWLMerged(allObjs);
-                    if (summary) {
-                        console.log(`✓ Real-time Success: ${summary}`);
-                        return summary;
-                    }
-                }
-            }
-        } catch (e) {
-            console.warn(`Attempt failed:`, e.message);
-        }
-    }
-    return null;
-}
-
 // 구버전 /api/rankinfo 삭제 - 위의 직접 fetch 버전 사용
 
 async function init() {
