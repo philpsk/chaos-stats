@@ -401,9 +401,9 @@ async function fetchAllRecord(ano, rawAno) {
     const targetUrl = GAME_API + '?tabType=A&ano=' + targetAno;
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-    // 2순위: 일반 유저(웹 브라우저) 전용 클라우드플레어 프록시 (CORS 완벽 우회)
-    // 아래 주소를 나중에 발급받게 될 Worker 주소로 바꾸시면 됩니다. (예시 URL)
-    const WORKER_URL = 'https://chaos-proxy.philpsk.workers.dev';
+    // 2순위: 일반 유저(웹 브라우저) 전용 구글 앱스 스크립트 프록시 (CORS 완벽 우회)
+    // 사용자님이 생성하신 평생 무료 구글 백엔드 주소 적용 완료!
+    const WORKER_URL = 'https://script.google.com/macros/s/AKfycby1H2PVEMbzf_cd80ua8UFhni3ZbITnIcuOpU9yCLNt4QrKh-2GeRsOGvZMqShkgqg5/exec';
 
     const attemptUrls = [];
     if (isLocal) {
