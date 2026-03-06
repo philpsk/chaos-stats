@@ -103,7 +103,7 @@ function formatWLMerged(items) {
     if (data.con > 0) conStr = `${data.con}연승`;
     else if (data.con < 0) conStr = `${Math.abs(data.con)}연패`;
 
-    return `${data.pc}전 ${data.win}승 ${data.loss}패 (${wr}%) | ${conStr}`;
+    return `${data.pc}전 ${data.win}승 ${data.loss}패 (${wr}%) (구버전) | ${conStr}`;
 }
 
 // 모든 객체 수집
