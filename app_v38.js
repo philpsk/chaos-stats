@@ -39,6 +39,14 @@ function getGradeColor(gradeText) {
     return 'white';
 }
 
+// [추가] ANO 정규화: 앞자리의 '0'을 제거하여 DB.json의 키와 일치시킴
+function normalizeAno(val) {
+    if (!val) return "---";
+    const s = val.toString().trim();
+    if (s === "---") return "---";
+    return s.replace(/^0+/, "") || "0";
+}
+
 const els = {
     nickname: document.getElementById('user-nickname'),
     ano: document.getElementById('user-ano'),
@@ -151,14 +159,15 @@ async function init() {
 function handleSearch() {
     const val = els.searchInput.value.toLowerCase();
     filteredData = allData.filter(u => {
-        const anoStr = (u.userANO || u.ano || "").toString();
+        const rawAno = (u.userANO || u.ano || "").toString();
+        const normAno = normalizeAno(rawAno);
         const nick = (u.nick || u.nickname || "").toLowerCase();
 
-        // [수정] 전닉 히스토리 검색 추가
-        const detail = userDetails[anoStr] || {};
+        // 전닉 히스토리 검색 (정규화된 ANO 사용)
+        const detail = userDetails[normAno] || {};
         const history = (detail.nickHistory || []).map(n => n.toLowerCase());
 
-        return nick.includes(val) || anoStr.includes(val) || history.some(h => h.includes(val));
+        return nick.includes(val) || rawAno.includes(val) || normAno.includes(val) || history.some(h => h.includes(val));
     });
     currentPage = 1;
     renderTable();
@@ -226,8 +235,8 @@ function renderTable() {
         const rank = u.RTRank || u.rank || "---";
 
         // 선호 영웅 이미지 생성 (최대 5개)
-        // DB.json(userDetails) 구조가 userDetails['ANO'] 형태라고 가정
-        const dbInfo = userDetails[String(ano)] || userDetails[ano] || {};
+        // [수정] 정규화된 ANO로 userDetails 조회
+        const dbInfo = userDetails[normalizeAno(ano)] || {};
         const charList = u.characterList || dbInfo.characterList || [];
 
         if (ano === pageData[0].userANO || ano === pageData[0].ano) { // 첫 번째 유저만 로그 찍기
@@ -437,8 +446,9 @@ async function fetchAllRecord(ano, rawAno) {
 }
 
 async function selectUser(ano) {
-    const user = allData.find(u => (u.userANO || u.ano).toString() === ano.toString());
-    const detail = userDetails[ano] || {};
+    const normAno = normalizeAno(ano);
+    const user = allData.find(u => normalizeAno(u.userANO || u.ano) === normAno);
+    const detail = userDetails[normAno] || {};
     const basic = detail.basicInfo || {};
 
     if (user) {
