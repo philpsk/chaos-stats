@@ -151,9 +151,14 @@ async function init() {
 function handleSearch() {
     const val = els.searchInput.value.toLowerCase();
     filteredData = allData.filter(u => {
+        const anoStr = (u.userANO || u.ano || "").toString();
         const nick = (u.nick || u.nickname || "").toLowerCase();
-        const ano = (u.userANO || u.ano || "").toString();
-        return nick.includes(val) || ano.includes(val);
+
+        // [수정] 전닉 히스토리 검색 추가
+        const detail = userDetails[anoStr] || {};
+        const history = (detail.nickHistory || []).map(n => n.toLowerCase());
+
+        return nick.includes(val) || anoStr.includes(val) || history.some(h => h.includes(val));
     });
     currentPage = 1;
     renderTable();
