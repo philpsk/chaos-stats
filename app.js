@@ -451,15 +451,20 @@ async function selectUser(ano) {
         els.grade.style.color = getGradeColor(user.gradeName || user.grade);
         els.rank.innerText = `${user.RTRank || user.rank || '---'}위`;
 
-        // 승률 표시 (상단 배지)
-        const win = parseInt(user.winCount || user.win || 0, 10);
-        const loss = parseInt(user.loseCount || user.lose || 0, 10);
-        let wr = user.winRate || ((win + loss) > 0 ? Math.round((win / (win + loss)) * 100) : 0);
-        els.seasonWr.innerText = `${wr}%`;
-
-        // 상세 정보판 업데이트
+        // 상세 정보판 업데이트 (승률 배지 계산을 위해 위치 조정)
         els.stats.nick.innerText = user.nick || user.nickname || '---';
         els.stats.anoVal.innerText = displayAno;
+
+        // [수정] 시즌 전적 필드 우선순위 교정: 랭킹 API(최신 데이터) 우선, DB.json(구버전) 후순위
+        const swl = detail.rank_season_wl || {};
+        const swin = parseInt(user.win || user.winCount || user.WinCount || swl.totalWinCount || swl.winCount || 0, 10);
+        const sloss = parseInt(user.lose || user.loseCount || user.LoseCount || swl.totalLoseCount || swl.loseCount || 0, 10);
+        const spc = parseInt(user.playCount || swl.playCount || 0, 10) || (swin + sloss);
+        const swr = user.winRate || user.WinRate_InclDisc || swl.totalWinRate || (spc > 0 ? Math.round((swin / spc) * 100) : 0);
+        els.stats.seasonRec.innerHTML = `${spc}전 <span style="color:#238636">${swin}승</span> <span style="color:#da3633">${sloss}패</span> (${String(swr).replace('%', '')}%)`;
+
+        // [수정] 메인 승률 배지 0% 고정 버그 픽스 (위의 정확한 swr 데이터 재활용)
+        els.seasonWr.innerText = `${String(swr).replace('%', '')}%`;
 
         // [수정] 시즌 전적 필드 우선순위 교정: 랭킹 API(최신 데이터) 우선, DB.json(구버전) 후순위
         const swl = detail.rank_season_wl || {};
