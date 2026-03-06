@@ -217,9 +217,8 @@ function renderTable() {
         if (ano === pageData[0].userANO || ano === pageData[0].ano) { // 첫 번째 유저만 로그 찍기
             console.log(`[DEBUG] ANO: ${ano}, Nick: ${nick}, charList:`, charList);
         }
-        const heroIconsHtml = charList.slice(0, 5).map(c => {
-            const cNo = c.characterNo || c; // 구조가 중첩되어 있을 수도 있으니 확인
-            console.log(`[DEBUG] Image mapped -> img_hero/${cNo}.png`);
+        const heroIconsHtml = charList.slice(0, 7).map(c => {
+            const cNo = c.characterNo || c;
             return `<img src="img_hero/${cNo}.png" class="hero-mini-icon" alt="Hero ${cNo}">`;
         }).join('');
 
@@ -509,15 +508,15 @@ async function selectUser(ano) {
 
 function renderHeroList(detail) {
     const heroes = detail.characterList || [];
-    const basic = detail.basicInfo || {};
-    const likeHeroesRaw = detail.rank_season_wl ? (detail.rank_season_wl.likeRateHero || "") : (basic.likeRateHero || "");
-    const likeHeroes = likeHeroesRaw.split(",").map(s => s.trim());
-
-    els.heroList.innerHTML = (heroes.length > 0 ? heroes : []).slice(0, 16).map((h, i) => {
-        const name = HERO_MAP[h.characterNo] || h.characterNo;
-        const clr = likeHeroes.includes(name) ? "#FF4D4D" : "#58A6FF";
-        return `<span style="color:${clr}; margin-right: 8px;">${name}${i < 15 && i < heroes.length - 1 ? ',' : ''}</span>`;
-    }).join('');
+    // 상단 프로필 영역 선호 영웅 (아이콘 7개로 변경)
+    els.heroList.innerHTML = `
+        <div style="font-size:0.85rem; color:var(--accent-blue); font-weight:700; margin-bottom:10px;">선호 영웅</div>
+        <div style="display:flex; gap:8px;">
+            ${(heroes.length > 0 ? heroes : []).slice(0, 7).map(h => {
+        return `<img src="img_hero/${h.characterNo}.png" class="hero-mini-icon" style="width:34px; height:34px;" alt="Hero ${h.characterNo}">`;
+    }).join('')}
+        </div>
+    `;
 }
 
 function renderPagination() {
