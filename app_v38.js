@@ -49,6 +49,7 @@ const els = {
     stats: {
         totalRec: document.getElementById('stat-total-rec'),
         nick: document.getElementById('stat-nick'),
+        prevNicks: document.getElementById('stat-prev-nicks'),
         anoVal: document.getElementById('stat-ano-val'),
         seasonRec: document.getElementById('stat-season-rec'),
         consecutive: document.getElementById('stat-consecutive'),
@@ -93,25 +94,38 @@ function collectAllObjects(obj, results = []) {
 
 async function init() {
     console.log("Dashboard Init Starting...");
+    const loadingMsg = "데이터를 불러오는 중입니다...";
+    if (els.rankingBody) els.rankingBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px;">${loadingMsg}</td></tr>`;
+
     try {
-        const t = Date.now();
+        const cacheBuster = `cb=${Date.now()}`;
         const [rankRes, dbRes] = await Promise.all([
-            fetch(`V88_FINAL_RANK_DEEP.json?t=${t}`).catch(() => ({ ok: false, json: () => [] })),
-            fetch(`DB.json?t=${t}`).catch(() => ({ ok: false, json: () => ({}) }))
+            fetch(`V88_FINAL_RANK_DEEP.json?${cacheBuster}`).catch(err => {
+                console.error("Rank JSON Fetch Error:", err);
+                return { ok: false };
+            }),
+            fetch(`DB.json?${cacheBuster}`).catch(err => {
+                console.error("DB JSON Fetch Error:", err);
+                return { ok: false };
+            })
         ]);
 
         if (rankRes && rankRes.ok) {
             allData = await rankRes.json();
+            console.log("Rank Data Loaded:", allData.length);
         } else {
-            console.error("V88 JSON Load Failed");
-            allData = [];
+            throw new Error("데이터 파일이 없습니다. '데이터_업데이트.bat'를 실행해 주세요.");
+        }
+
+        if (allData.length === 0) {
+            if (els.rankingBody) {
+                els.rankingBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px; color:#8b949e;">표시할 데이터가 없습니다.<br>게임에서 랭킹을 훑어본 뒤 '데이터_업데이트.bat'를 실행해 주세요.</td></tr>`;
+            }
+            return;
         }
 
         if (dbRes && dbRes.ok) {
             userDetails = await dbRes.json();
-        } else {
-            console.error("DB JSON Load Failed");
-            userDetails = {};
         }
 
         filteredData = [...allData];
@@ -424,7 +438,17 @@ async function selectUser(ano) {
 
     if (user) {
         // [1] 즉시 UI 채우기 (기존 DB 정보 우선, 없으면 랭킹 행 데이터 활용)
-        els.nickname.innerText = `닉네임: ${user.nick || user.nickname || '---'}`;
+        const currentNick = user.nick || user.nickname || '---';
+        const nicks = detail.nickHistory || [];
+        const history = nicks.filter(n => n && n !== 'Unknown');
+        const prevNicks = history.filter(n => n !== currentNick);
+
+        let nickDisp = currentNick;
+        if (prevNicks.length > 0) {
+            nickDisp += ` (전: ${prevNicks.join(', ')})`;
+        }
+
+        els.nickname.innerText = `닉네임: ${nickDisp}`;
         const displayAno = user.userANO || user.ano || ano;
         els.ano.innerText = `ANO: ${displayAno}`;
         els.grade.innerText = `등급: ${user.gradeName || '---'} ${user.gradeLevel || ''}`;
@@ -433,6 +457,14 @@ async function selectUser(ano) {
 
         // 상세 정보판 업데이트 (승률 배지 계산을 위해 위치 조정)
         els.stats.nick.innerText = user.nick || user.nickname || '---';
+
+        // 전닉(히스토리) 표시
+        const nicks = detail.nickHistory || [];
+        const currentNick = user.nick || user.nickname;
+        const history = nicks.filter(n => n !== currentNick);
+        els.stats.prevNicks.innerText = history.length > 0 ? history.join(', ') : '---';
+        els.stats.prevNicks.title = history.join(', ');
+
         els.stats.anoVal.innerText = displayAno;
 
         // [수정] 시즌 전적 필드 우선순위 교정: 랭킹 API(최신 데이터) 우선, DB.json(구버전) 후순위
