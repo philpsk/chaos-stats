@@ -437,11 +437,11 @@ async function selectUser(ano) {
         els.stats.nick.innerText = user.nick || user.nickname || '---';
         els.stats.anoVal.innerText = displayAno;
 
-        // [수정] 시즌 전적 불일치 해결: 리스트 데이터(user)가 더 정확할 수 있으므로 우선순위 조정
+        // [수정] 시즌 전적 필드 호환성 강화: win/winCount, lose/loseCount 모두 체크
         const swl = detail.rank_season_wl || {};
-        const swin = parseInt(swl.winCount || user.winCount || user.win || 0, 10);
-        const sloss = parseInt(swl.loseCount || user.loseCount || user.lose || 0, 10);
-        const spc = parseInt(swl.playCount || user.playCount || 0, 10) || (swin + sloss);
+        const swin = parseInt(swl.winCount || swl.win || user.win || user.winCount || 0, 10);
+        const sloss = parseInt(swl.loseCount || swl.lose || user.lose || user.loseCount || 0, 10);
+        const spc = parseInt(swl.playCount || swl.PlayCount || user.playCount || 0, 10) || (swin + sloss);
         const swr = swl.winRate || user.winRate || (spc > 0 ? Math.round((swin / spc) * 100) : 0);
         els.stats.seasonRec.innerHTML = `${spc}전 <span style="color:#238636">${swin}승</span> <span style="color:#da3633">${sloss}패</span> (${swr}%)`;
 
