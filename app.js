@@ -309,80 +309,108 @@ function renderTable() {
 
     renderPagination();
 }
+// 최신 전적 필드 병합 및 포맷팅 (더 넓은 필드 범위 지원)
+function formatWLMerged(items) {
+    if (!Array.isArray(items)) items = [items];
+    let data = { win: 0, loss: 0, draw: 0, pc: 0, wr: 0, con: 0 };
+    let foundAny = false;
 
-function renderPagination() {
-    const totalPages = Math.ceil(filteredData.length / pageSize);
-    const areas = [els.pagination, els.paginationTop];
+    for (const item of items) {
+        if (!item || typeof item !== 'object') continue;
 
-    areas.forEach(area => {
-        if (!area) return;
-        area.innerHTML = '';
-        if (totalPages <= 1) return;
+        // 필드명 후보군 모두 체크 (대소문자 및 접두사 대응)
+        const w = parseInt(item.totalWinCount || item.WinCount || item.winCount || item.win || 0, 10);
+        const l = parseInt(item.totalLoseCount || item.LoseCount || item.loseCount || item.lose || 0, 10);
+        const d = parseInt(item.totalDrawCount || item.DrawCount || item.drawCount || item.draw || 0, 10);
+        const p = parseInt(item.playCount || item.PlayCount || item.playcount || 0, 10);
+        const c = parseInt(item.consecutiveWinLose || item.con_winlose || item.consecutive || 0, 10);
 
-        // 버튼 생성 헬퍼
-        const createBtn = (text, target, active = false, disabled = false) => {
-            const btn = document.createElement('button');
-            btn.className = `pg-btn ${active ? 'active' : ''}`;
-            btn.innerText = text;
-            btn.disabled = disabled;
-            if (!disabled) {
-                btn.onclick = () => {
-                    currentPage = target;
-                    renderTable();
-                    document.querySelector('.right-panel').scrollTo({ top: 0, behavior: 'smooth' });
-                };
-            }
-            return btn;
-        };
-
-        // << (첫 페이지)
-        area.appendChild(createBtn('<<', 1, false, currentPage === 1));
-        // < (이전)
-        area.appendChild(createBtn('<', Math.max(1, currentPage - 1), false, currentPage === 1));
-
-        // 페이지 번호 (최대 10개 표시)
-        let start = Math.max(1, currentPage - 4);
-        let end = Math.min(totalPages, start + 9);
-        if (end === totalPages) start = Math.max(1, end - 9);
-
-        for (let i = start; i <= end; i++) {
-            area.appendChild(createBtn(i, i, i === currentPage));
+        if (w > 0 || l > 0 || p > 0) {
+            data.win = Math.max(data.win, w);
+            data.loss = Math.max(data.loss, l);
+            data.draw = Math.max(data.draw, d);
+            data.pc = Math.max(data.pc, p, w + l + d);
+            foundAny = true;
         }
+        if (c !== 0) data.con = c;
+    }
 
-        // > (다음)
-        area.appendChild(createBtn('>', Math.min(totalPages, currentPage + 1), false, currentPage === totalPages));
-        // >> (끝 페이지)
-        area.appendChild(createBtn('>>', totalPages, false, currentPage === totalPages));
+    if (!foundAny && data.con === 0) return null;
 
-        // 페이지 직접 입력 (상단에만 표시 혹은 둘 다 표시 - 여기선 둘 다)
-        const inputWrapper = document.createElement('div');
-        inputWrapper.className = 'pg-input-wrapper';
+    const wr = (data.pc > 0) ? Math.round((data.win / data.pc) * 100) : 0;
+    let conStr = "---";
+    if (data.con > 0) conStr = `${data.con}연승`;
+    else if (data.con < 0) conStr = `${Math.abs(data.con)}연패`;
 
-        const input = document.createElement('input');
-        input.type = 'number';
-        input.className = 'pg-input';
-        input.value = currentPage;
-        input.min = 1;
-        input.max = totalPages;
-        input.onkeydown = (e) => {
-            if (e.key === 'Enter') {
-                let val = parseInt(input.value);
-                if (isNaN(val) || val < 1) val = 1;
-                if (val > totalPages) val = totalPages;
-                currentPage = val;
-                renderTable();
-                document.querySelector('.right-panel').scrollTo({ top: 0, behavior: 'smooth' });
+    return `${data.pc.toLocaleString()}전 <span style="color:#238636">${data.win.toLocaleString()}승</span> <span style="color:#da3633">${data.loss.toLocaleString()}패</span> (${wr}%) | ${conStr}`;
+}
+
+// 모든 객체 수집 (깊은 복사 없이 참조 탐색)
+function collectAllObjects(obj, results = []) {
+    if (!obj || typeof obj !== 'object' || results.includes(obj)) return results;
+    results.push(obj);
+    if (Array.isArray(obj)) {
+        for (const i of obj) collectAllObjects(i, results);
+    } else {
+        for (const v of Object.values(obj)) {
+            if (v && typeof v === 'object') collectAllObjects(v, results);
+        }
+    }
+    return results;
+}
+
+async function fetchAllRecord(ano, rawAno) {
+    const targetAno = String(rawAno || ano);
+    const dbInfo = userDetails[targetAno] || {};
+    if (dbInfo.rank_all_wl) return dbInfo.rank_all_wl;
+
+    const targetUrl = GAME_API + '?tabType=A&ano=' + targetAno;
+    const isLocal = window.location.protocol === 'http:';
+    const attemptUrls = [];
+    if (isLocal) attemptUrls.push(targetUrl);
+    attemptUrls.push(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+
+    for (const url of attemptUrls) {
+        try {
+            const res = await fetch(url, { signal: AbortSignal.timeout(10000) }); // 타임아웃 10초로 연장
+            const data = await res.json();
+            let content = data.contents || data;
+
+            if (typeof content === 'string' && content.length > 50) {
+                // 더 넓게 매칭 (가장 바깥쪽 괄호부터 끝까지)
+                const wlMatch = content.match(/winLoseTendency\s*:\s*([\[\{][^]*?\]?\}?)/);
+                const rawStr = wlMatch ? wlMatch[1] : content;
+
+                let parsedData = null;
+                try {
+                    // JSON 보관 처리 (따옴표 보정)
+                    const fixed = rawStr.trim()
+                        .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
+                        .replace(/,\s*([\]\}])/g, '$1');
+                    parsedData = JSON.parse(fixed);
+                } catch (e) {
+                    try {
+                        // 보조 수단: 객체 문자열 강제 생성 후 eval
+                        let evalStr = rawStr.trim();
+                        if (!evalStr.startsWith('[') && !evalStr.startsWith('{')) evalStr = '{' + evalStr + '}';
+                        parsedData = eval('(' + evalStr + ')');
+                    } catch (e2) { }
+                }
+
+                if (parsedData) {
+                    const allObjs = collectAllObjects(parsedData);
+                    const summary = formatWLMerged(allObjs);
+                    if (summary) {
+                        console.log(`✓ Real-time Success for ${targetAno}`);
+                        return summary;
+                    }
+                }
             }
-        };
-
-        const label = document.createElement('span');
-        label.className = 'total-pg-label';
-        label.innerText = `/ ${totalPages}`;
-
-        inputWrapper.appendChild(input);
-        inputWrapper.appendChild(label);
-        area.appendChild(inputWrapper);
-    });
+        } catch (e) {
+            console.warn(`Attempt failed for ${url.substring(0, 30)}...`, e.message);
+        }
+    }
+    return null;
 }
 
 async function selectUser(ano) {
@@ -397,7 +425,6 @@ async function selectUser(ano) {
         els.ano.innerText = `ANO: ${displayAno}`;
         els.grade.innerText = `등급: ${user.gradeName || '---'} ${user.gradeLevel || ''}`;
         els.grade.style.color = getGradeColor(user.gradeName || user.grade);
-        els.grade.style.fontWeight = "bold";
         els.rank.innerText = `${user.RTRank || user.rank || '---'}위`;
 
         // 승률 표시 (상단 배지)
@@ -410,18 +437,18 @@ async function selectUser(ano) {
         els.stats.nick.innerText = user.nick || user.nickname || '---';
         els.stats.anoVal.innerText = displayAno;
 
-        // 시즌 전적 (기존 DB 정보가 있으면 사용, 없으면 리스트 데이터 사용)
-        const swl = detail.rank_season_wl || user;
-        const swin = parseInt(swl.winCount || swl.win || swl.WinCount || 0, 10);
-        const sloss = parseInt(swl.loseCount || swl.lose || swl.LoseCount || 0, 10);
-        const spc = parseInt(swl.playCount || swl.PlayCount || 0, 10) || swin + sloss;
-        const swr = swl.winRate || (spc > 0 ? Math.round((swin / spc) * 100) : 0);
+        // [수정] 시즌 전적 불일치 해결: 리스트 데이터(user)가 더 정확할 수 있으므로 우선순위 조정
+        const swl = detail.rank_season_wl || {};
+        const swin = parseInt(swl.winCount || user.winCount || user.win || 0, 10);
+        const sloss = parseInt(swl.loseCount || user.loseCount || user.lose || 0, 10);
+        const spc = parseInt(swl.playCount || user.playCount || 0, 10) || (swin + sloss);
+        const swr = swl.winRate || user.winRate || (spc > 0 ? Math.round((swin / spc) * 100) : 0);
         els.stats.seasonRec.innerHTML = `${spc}전 <span style="color:#238636">${swin}승</span> <span style="color:#da3633">${sloss}패</span> (${swr}%)`;
 
         // 기타 상세 스탯 (기존 DB 정보 우선)
         els.stats.totalCont.innerText = Number(basic.totalContribution || user.totalContribution || 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
         els.stats.combatCont.innerText = Number(basic.combatContribution || user.combatContribution || 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-        els.stats.combatRate.innerText = `${(basic.battleJoinRate || user.combatRate || 0)}%`;
+        els.stats.combatRate.innerText = `${(basic.battleJoinRate || user.combatRate || user.combatRateAvg || 0)}%`;
         els.stats.kda.innerText = `${user.avgKill || 0} / ${user.avgDeath || 0} / ${user.avgAssist || 0}`;
         els.stats.avgLv.innerText = `Lv.${(basic.averageCharacterLevel || user.avgLevel || 0)}`;
         els.stats.avgDispell.innerText = `${basic.avgDispell || user.avgDispell || 0}`;
@@ -460,7 +487,7 @@ function renderHeroList(detail) {
     const likeHeroesRaw = detail.rank_season_wl ? (detail.rank_season_wl.likeRateHero || "") : (basic.likeRateHero || "");
     const likeHeroes = likeHeroesRaw.split(",").map(s => s.trim());
 
-    els.heroList.innerHTML = heroes.slice(0, 16).map((h, i) => {
+    els.heroList.innerHTML = (heroes.length > 0 ? heroes : []).slice(0, 16).map((h, i) => {
         const name = HERO_MAP[h.characterNo] || h.characterNo;
         const clr = likeHeroes.includes(name) ? "#FF4D4D" : "#58A6FF";
         return `<span style="color:${clr}; margin-right: 8px;">${name}${i < 15 && i < heroes.length - 1 ? ',' : ''}</span>`;
