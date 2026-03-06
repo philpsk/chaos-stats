@@ -364,53 +364,101 @@ async function fetchAllRecord(ano, rawAno) {
     const dbInfo = userDetails[targetAno] || {};
     if (dbInfo.rank_all_wl) return dbInfo.rank_all_wl;
 
+    console.log(`Real-time fetch (Total & Streak) for ANO: ${targetAno}`);
+
     const targetUrl = GAME_API + '?tabType=A&ano=' + targetAno;
     const isLocal = window.location.protocol === 'http:';
+
+    // 프록시 다변화 배열 구성
     const attemptUrls = [];
     if (isLocal) attemptUrls.push(targetUrl);
     attemptUrls.push(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+    attemptUrls.push(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+    attemptUrls.push(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
+    attemptUrls.push(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`);
 
-    for (const url of attemptUrls) {
+    // 단일 프록시 요청 처리 핸들러 (타임아웃 8초)
+    const fetchSingleProxy = async (url) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
         try {
-            const res = await fetch(url, { signal: AbortSignal.timeout(10000) }); // 타임아웃 10초로 연장
-            const data = await res.json();
-            let content = data.contents || data;
+            const res = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
 
-            if (typeof content === 'string' && content.length > 50) {
-                // 더 넓게 매칭 (가장 바깥쪽 괄호부터 끝까지)
-                const wlMatch = content.match(/winLoseTendency\s*:\s*([\[\{][^]*?\]?\}?)/);
-                const rawStr = wlMatch ? wlMatch[1] : content;
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-                let parsedData = null;
-                try {
-                    // JSON 보관 처리 (따옴표 보정)
-                    const fixed = rawStr.trim()
-                        .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
-                        .replace(/,\s*([\]\}])/g, '$1');
-                    parsedData = JSON.parse(fixed);
-                } catch (e) {
-                    try {
-                        // 보조 수단: 객체 문자열 강제 생성 후 eval
-                        let evalStr = rawStr.trim();
-                        if (!evalStr.startsWith('[') && !evalStr.startsWith('{')) evalStr = '{' + evalStr + '}';
-                        parsedData = eval('(' + evalStr + ')');
-                    } catch (e2) { }
-                }
-
-                if (parsedData) {
-                    const allObjs = collectAllObjects(parsedData);
-                    const summary = formatWLMerged(allObjs);
-                    if (summary) {
-                        console.log(`✓ Real-time Success for ${targetAno}`);
-                        return summary;
-                    }
-                }
+            const contentType = res.headers.get("content-type");
+            let content = "";
+            if (contentType && contentType.includes("application/json") && url.includes("/get?url")) {
+                const data = await res.json();
+                content = data.contents || JSON.stringify(data);
+            } else {
+                content = await res.text();
             }
+
+            if (typeof content !== 'string' || content.length < 50 || !content.includes('{')) {
+                throw new Error("Invalid response format");
+            }
+
+            // winLoseTendency 블록 추출
+            const wlMatch = content.match(/winLoseTendency\s*:\s*([\[\{][^]*?[\]\}])/);
+            if (!wlMatch || !wlMatch[1]) throw new Error("No payload found");
+
+            const rawStr = wlMatch[1].trim();
+            let parsedData = null;
+            try {
+                // 비표준 JSON 보정 (따옴표 없는 키, 불필요한 쉼표 등)
+                const fixedJson = rawStr
+                    .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
+                    .replace(/:\s*'([^']*)'/g, ':"$1"')
+                    .replace(/,\s*([\]\}])/g, '$1');
+                parsedData = JSON.parse(fixedJson);
+            } catch (err) {
+                // 파싱 실패시 eval 폴백
+                try {
+                    let evalStr = rawStr;
+                    if (!evalStr.startsWith('[') && !evalStr.startsWith('{')) evalStr = '{' + evalStr + '}';
+                    parsedData = eval('(' + evalStr + ')');
+                } catch (err2) { throw new Error("JSON Parse/Eval failed"); }
+            }
+
+            if (!parsedData) throw new Error("Parsed data is null");
+
+            const allObjs = collectAllObjects(parsedData);
+            const summary = formatWLMerged(allObjs);
+            if (!summary) throw new Error("Summary generation failed");
+
+            console.log(`✓ Real-time Success via [${url.split('/')[2]}]: ${summary}`);
+            return summary;
         } catch (e) {
-            console.warn(`Attempt failed for ${url.substring(0, 30)}...`, e.message);
+            clearTimeout(timeoutId);
+            throw e; // Promise.any 처리를 위해 던짐
         }
-    }
-    return null;
+    };
+
+    // 무한 로딩 방지: 커스텀 Any 프로미스 (가장 먼저 성공한 것 반환, 모두 실패시 null)
+    return new Promise((resolve) => {
+        let failures = 0;
+        let resolved = false;
+
+        for (const url of attemptUrls) {
+            fetchSingleProxy(url)
+                .then(summary => {
+                    if (!resolved) {
+                        resolved = true;
+                        resolve(summary);
+                    }
+                })
+                .catch(err => {
+                    // console.warn(`Proxy failed [${url.split('/')[2]}]:`, err.message);
+                    failures++;
+                    if (failures === attemptUrls.length && !resolved) {
+                        console.error("❌ All real-time proxy attempts failed.");
+                        resolve(null);
+                    }
+                });
+        }
+    });
 }
 
 async function selectUser(ano) {
