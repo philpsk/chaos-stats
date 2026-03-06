@@ -366,6 +366,29 @@ async function fetchAllRecord(ano, rawAno) {
 
     console.log(`Real-time fetch (Total & Streak) for ANO: ${targetAno}`);
 
+    // 응답 문자열에서 안전하게 비표준 JSON 객체(중첩 배열 등 포함)를 추출하는 헬퍼 함수
+    const parseChaosJson = (rawContent) => {
+        if (!rawContent) return null;
+        let text = rawContent.trim();
+        if (text.includes('window.RecordInfo')) {
+            text = text.substring(text.indexOf('=') + 1).trim();
+            if (text.endsWith(';')) text = text.substring(0, text.length - 1);
+        }
+        const firstBrace = text.indexOf('{');
+        const lastBrace = text.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1) {
+            text = text.substring(firstBrace, lastBrace + 1);
+        }
+        let parsed = null;
+        try {
+            const fixed = text.replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":').replace(/:\s*'([^']*)'/g, ':"$1"').replace(/,\s*([\]\}])/g, '$1');
+            parsed = JSON.parse(fixed);
+        } catch (e) {
+            try { parsed = eval('(' + text + ')'); } catch (e2) { console.error("Parse Fallback Error:", e2); }
+        }
+        return parsed;
+    };
+
     // ★ 1순위: 사용자 파이썬 서버가 수집해서 같이 올린 cache 폴더 내 JSON 정적 파일 우선 조회
     try {
         const cacheUrl = `cache/${targetAno}_realtime.json?_t=${Date.now()}`;
@@ -373,24 +396,12 @@ async function fetchAllRecord(ano, rawAno) {
         const cacheRes = await fetch(cacheUrl, { signal: AbortSignal.timeout(3000) });
         if (cacheRes.ok) {
             const cacheContent = await cacheRes.text();
-            if (cacheContent && cacheContent.includes('winLoseTendency')) {
-                const wlMatch = cacheContent.match(/winLoseTendency\s*:\s*([\[\{][^]*?[\]\}])/);
-                if (wlMatch && wlMatch[1]) {
-                    const rawStr = wlMatch[1].trim();
-                    let parsedData = null;
-                    try {
-                        const fixedJson = rawStr.replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":').replace(/:\s*'([^']*)'/g, ':"$1"').replace(/,\s*([\]\}])/g, '$1');
-                        parsedData = JSON.parse(fixedJson);
-                    } catch (e) {
-                        try { parsedData = eval('(' + (rawStr.startsWith('[') || rawStr.startsWith('{') ? rawStr : '{' + rawStr + '}') + ')'); } catch (e2) { }
-                    }
-                    if (parsedData) {
-                        const summary = formatWLMerged(collectAllObjects(parsedData));
-                        if (summary) {
-                            console.log(`✓ Success via Static Cache!`);
-                            return summary;
-                        }
-                    }
+            const parsedData = parseChaosJson(cacheContent);
+            if (parsedData && (parsedData.winLoseTendency || parsedData.rank_all_wl)) {
+                const summary = formatWLMerged(collectAllObjects(parsedData));
+                if (summary) {
+                    console.log(`✓ Success via Static Cache!`);
+                    return summary;
                 }
             }
         }
@@ -432,33 +443,10 @@ async function fetchAllRecord(ano, rawAno) {
                 content = await res.text();
             }
 
-            if (typeof content !== 'string' || content.length < 50 || !content.includes('{')) {
-                throw new Error("Invalid response format");
+            const parsedData = parseChaosJson(content);
+            if (!parsedData || (!parsedData.winLoseTendency && !parsedData.rank_all_wl)) {
+                throw new Error("Parsed data is null or missing winLoseTendency");
             }
-
-            // winLoseTendency 블록 추출
-            const wlMatch = content.match(/winLoseTendency\s*:\s*([\[\{][^]*?[\]\}])/);
-            if (!wlMatch || !wlMatch[1]) throw new Error("No payload found");
-
-            const rawStr = wlMatch[1].trim();
-            let parsedData = null;
-            try {
-                // 비표준 JSON 보정 (따옴표 없는 키, 불필요한 쉼표 등)
-                const fixedJson = rawStr
-                    .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
-                    .replace(/:\s*'([^']*)'/g, ':"$1"')
-                    .replace(/,\s*([\]\}])/g, '$1');
-                parsedData = JSON.parse(fixedJson);
-            } catch (err) {
-                // 파싱 실패시 eval 폴백
-                try {
-                    let evalStr = rawStr;
-                    if (!evalStr.startsWith('[') && !evalStr.startsWith('{')) evalStr = '{' + evalStr + '}';
-                    parsedData = eval('(' + evalStr + ')');
-                } catch (err2) { throw new Error("JSON Parse/Eval failed"); }
-            }
-
-            if (!parsedData) throw new Error("Parsed data is null");
 
             const allObjs = collectAllObjects(parsedData);
             const summary = formatWLMerged(allObjs);
