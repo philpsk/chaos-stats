@@ -456,14 +456,11 @@ async function selectUser(ano) {
         els.rank.innerText = `${user.RTRank || user.rank || '---'}위`;
 
         // 상세 정보판 업데이트 (승률 배지 계산을 위해 위치 조정)
-        els.stats.nick.innerText = user.nick || user.nickname || '---';
+        els.stats.nick.innerText = currentNick;
 
         // 전닉(히스토리) 표시
-        const nicks = detail.nickHistory || [];
-        const currentNick = user.nick || user.nickname;
-        const history = nicks.filter(n => n !== currentNick);
-        els.stats.prevNicks.innerText = history.length > 0 ? history.join(', ') : '---';
-        els.stats.prevNicks.title = history.join(', ');
+        els.stats.prevNicks.innerText = prevNicks.length > 0 ? prevNicks.join(', ') : '---';
+        els.stats.prevNicks.title = prevNicks.join(', ');
 
         els.stats.anoVal.innerText = displayAno;
 
