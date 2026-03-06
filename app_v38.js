@@ -452,31 +452,30 @@ async function selectUser(ano) {
     const basic = detail.basicInfo || {};
 
     if (user) {
-        // [1] 즉시 UI 채우기 (기존 DB 정보 우선, 없으면 랭킹 행 데이터 활용)
-        const currentNick = user.nick || user.nickname || '---';
+        // [1] 선언 통합: 중복 방지 및 전역 활용
+        const currentNick = user.nick || user.nickname || 'Unknown';
         const nicks = detail.nickHistory || [];
-        const history = nicks.filter(n => n && n !== 'Unknown');
-        const prevNicks = history.filter(n => n !== currentNick);
+        // Unknown 제외 및 현재 닉네임 제외한 순수 '이전 닉네임' 목록 추출
+        const validHistory = nicks.filter(n => n && n !== 'Unknown');
+        const prevNicksList = validHistory.filter(n => n !== currentNick);
 
-        let nickDisp = currentNick;
-        if (prevNicks.length > 0) {
-            nickDisp += ` (전: ${prevNicks.join(', ')})`;
+        // 상단 헤더 닉네임 (전: ...) 표시용
+        let nickHeaderDisp = currentNick;
+        if (prevNicksList.length > 0) {
+            nickHeaderDisp += ` (전: ${prevNicksList.join(', ')})`;
         }
 
-        els.nickname.innerText = `닉네임: ${nickDisp}`;
+        els.nickname.innerText = `닉네임: ${nickHeaderDisp}`;
         const displayAno = user.userANO || user.ano || ano;
         els.ano.innerText = `ANO: ${displayAno}`;
         els.grade.innerText = `등급: ${user.gradeName || '---'} ${user.gradeLevel || ''}`;
         els.grade.style.color = getGradeColor(user.gradeName || user.grade);
         els.rank.innerText = `${user.RTRank || user.rank || '---'}위`;
 
-        // 상세 정보판 업데이트 (승률 배지 계산을 위해 위치 조정)
+        // 상세 정보판 업데이트
         els.stats.nick.innerText = currentNick;
-
-        // 전닉(히스토리) 표시
-        els.stats.prevNicks.innerText = prevNicks.length > 0 ? prevNicks.join(', ') : '---';
-        els.stats.prevNicks.title = prevNicks.join(', ');
-
+        els.stats.prevNicks.innerText = prevNicksList.length > 0 ? prevNicksList.join(', ') : '---';
+        els.stats.prevNicks.title = prevNicksList.join(', ');
         els.stats.anoVal.innerText = displayAno;
 
         // [수정] 시즌 전적 필드 우선순위 교정: 랭킹 API(최신 데이터) 우선, DB.json(구버전) 후순위
