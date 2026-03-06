@@ -445,20 +445,22 @@ async function selectUser(ano) {
         const swr = swl.totalWinRate || user.WinRate_InclDisc || user.winRate || (spc > 0 ? Math.round((swin / spc) * 100) : 0);
         els.stats.seasonRec.innerHTML = `${spc}전 <span style="color:#238636">${swin}승</span> <span style="color:#da3633">${sloss}패</span> (${String(swr).replace('%', '')}%)`;
 
-        // [수정] KDA 계산: DB의 Sum 데이터를 플레이 횟수로 나누어 평균 산출
-        const kSum = parseInt(user.killCntSum || 0, 10);
-        const dSum = parseInt(user.dieCntSum || 0, 10);
-        const aSum = parseInt(user.assistCntSum || 0, 10);
-        const pCountForKda = spc > 0 ? spc : 1;
-
-        const avgK = (kSum / pCountForKda).toFixed(1);
-        const avgD = (dSum / pCountForKda).toFixed(1);
-        const avgA = (aSum / pCountForKda).toFixed(1);
+        // [수정] KDA 계산: 데스크톱 버전에 맞게 단일 수치(killDieAssistRate) 우선 사용
+        const kdaSingle = parseFloat(user.killDieAssistRate || detail.kda || 0);
+        let kdaDisplay = kdaSingle > 0 ? kdaSingle.toFixed(2) : "0.00";
+        if (kdaSingle === 0 && spc > 0) {
+            // killDieAssistRate가 없을 경우 자체 계산 (Kill + Assist) / Death
+            const kSum = parseInt(user.killCntSum || 0, 10);
+            const dSum = parseInt(user.dieCntSum || 0, 10);
+            const aSum = parseInt(user.assistCntSum || 0, 10);
+            const calculatedKda = (kSum + aSum) / Math.max(dSum, 1);
+            kdaDisplay = calculatedKda.toFixed(2);
+        }
 
         els.stats.totalCont.innerText = Number(basic.totalContribution || user.totalContribute || user.avgContribute || 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
         els.stats.combatCont.innerText = Number(basic.combatContribution || user.combatContribution || 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-        els.stats.combatRate.innerText = `${(basic.battleJoinRate || user.killDieAssistRate || 0)}%`;
-        els.stats.kda.innerText = `${avgK} / ${avgD} / ${avgA}`;
+        els.stats.combatRate.innerText = `${(basic.battleJoinRate || user.combatRate || user.combatRateAvg || 0)}%`;
+        els.stats.kda.innerText = `${kdaDisplay}`;
         els.stats.avgLv.innerText = `Lv.${(basic.averageCharacterLevel || user.avgLevel || 0)}`;
         els.stats.avgDispell.innerText = `${basic.avgDispell || user.avgDispell || 0}`;
         els.stats.avgPotion.innerText = `${basic.avgPotion || user.avgPotion || 0}`;
@@ -466,9 +468,12 @@ async function selectUser(ano) {
 
         renderHeroList(detail);
 
-        // [2] 랭대 총전적 & 연승 정보만 "실시간"으로 받아오기 (비동기)
-        els.stats.totalRec.innerHTML = '<span class="loading-text">실시간 확인 중...</span>';
-        els.stats.consecutive.innerHTML = '<span class="loading-text">...</span>';
+        // [수정] 랭대 총전적 & 연승 정보 Fallback 로직 강화
+        const fallbackTotalRec = detail.rank_all_wl || `${user.playCount || swin + sloss}전 ${swin}승 ${sloss}패 (${swr}%)`;
+        const fallbackCon = detail.winLoseTendency || '---';
+
+        els.stats.totalRec.innerHTML = `<span class="loading-text" style="color:#888">${fallbackTotalRec}</span>`;
+        els.stats.consecutive.innerHTML = `<span class="loading-text" style="color:#888">${fallbackCon}</span>`;
 
         fetchAllRecord(ano, displayAno).then(summary => {
             if (summary) {
@@ -482,9 +487,9 @@ async function selectUser(ano) {
                     else els.stats.consecutive.innerText = conStr;
                 }
             } else {
-                // 실시간 실패 시 DB에 기존 정보가 있으면 표시, 없으면 데이터 없음
-                els.stats.totalRec.innerText = detail.rank_all_wl || '데이터 없음';
-                els.stats.consecutive.innerText = detail.winLoseTendency || '---';
+                // 실시간 실패 시 DB에 기존 정보가 있으면 일반 텍스트로 표시
+                els.stats.totalRec.innerText = fallbackTotalRec;
+                els.stats.consecutive.innerText = fallbackCon;
             }
         });
     }
