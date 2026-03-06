@@ -172,8 +172,9 @@ header {
 }
 
 .pg-btn:disabled {
-  opacity: 0.3;
-  cursor: default;
+  opacity: 0.2;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .pg-input-wrapper {

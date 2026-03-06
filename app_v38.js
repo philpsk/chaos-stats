@@ -182,13 +182,60 @@ function renderTable() {
 }
 
 function renderPagination() {
-    const total = Math.ceil(filteredData.length / pageSize);
-    let h = ''; if (total > 1) { for (let i = 1; i <= Math.min(total, 10); i++) h += `<button onclick="goToPage(${i})" class="pg-btn ${i === currentPage ? 'active' : ''}">${i}</button>`; }
+    const totalPages = Math.ceil(filteredData.length / pageSize);
+    if (totalPages <= 1) {
+        updateHtml('pagination', '');
+        updateHtml('pagination-top', '');
+        return;
+    }
+
+    const maxVisibleButtons = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisibleButtons / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
+
+    if (endPage - startPage + 1 < maxVisibleButtons) {
+        startPage = Math.max(1, endPage - maxVisibleButtons + 1);
+    }
+
+    let h = `<div class="pagination-area">`;
+    
+    // 처음/이전 버튼
+    h += `<button onclick="goToPage(1)" class="pg-btn" ${currentPage === 1 ? 'disabled' : ''} title="처음으로">«</button>`;
+    h += `<button onclick="goToPage(${currentPage - 1})" class="pg-btn" ${currentPage === 1 ? 'disabled' : ''} title="이전">‹</button>`;
+
+    // 숫자 버튼
+    for (let i = startPage; i <= endPage; i++) {
+        h += `<button onclick="goToPage(${i})" class="pg-btn ${i === currentPage ? 'active' : ''}">${i}</button>`;
+    }
+
+    // 다음/끝 버튼
+    h += `<button onclick="goToPage(${currentPage + 1})" class="pg-btn" ${currentPage === totalPages ? 'disabled' : ''} title="다음">›</button>`;
+    h += `<button onclick="goToPage(${totalPages})" class="pg-btn" ${currentPage === totalPages ? 'disabled' : ''} title="맨 끝으로">»</button>`;
+
+    // 페이지 입력
+    h += `
+        <div class="pg-input-wrapper">
+            <input type="number" class="pg-input" value="${currentPage}" min="1" max="${totalPages}" 
+                onkeydown="if(event.key==='Enter') goToPage(this.value)"
+                onfocus="this.select()">
+            <span class="total-pg-label">/ ${totalPages}</span>
+        </div>
+    `;
+    h += `</div>`;
+
     updateHtml('pagination', h);
     updateHtml('pagination-top', h);
 }
 
-window.goToPage = (p) => { currentPage = parseInt(p, 10); renderTable(); };
+window.goToPage = (p) => {
+    const totalPages = Math.ceil(filteredData.length / pageSize);
+    let page = parseInt(p, 10);
+    if (isNaN(page)) return;
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    currentPage = page;
+    renderTable();
+};
 
 async function selectUser(ano) {
     const norm = normalizeAno(ano);
