@@ -401,13 +401,16 @@ async function fetchAllRecord(ano, rawAno) {
     const targetUrl = GAME_API + '?tabType=A&ano=' + targetAno;
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-    // 2순위: 프록시 다변화 배열 구성 (퍼블릭 프록시 전면 폐기)
+    // 2순위: 일반 유저(웹 브라우저) 전용 클라우드플레어 프록시 (CORS 완벽 우회)
+    // 아래 주소를 나중에 발급받게 될 Worker 주소로 바꾸시면 됩니다. (예시 URL)
+    const WORKER_URL = 'https://chaos-proxy.philpsk.workers.dev';
+
     const attemptUrls = [];
     if (isLocal) {
         attemptUrls.push(`/api/record?ano=${targetAno}`); // 로컬 전용 파이썬 구축 서버
     } else {
-        // 사용자 확인 결과, 모든 무료 우회 서버가 대상 사이트(chaosonline)에 대해 차단됨.
-        // 괜히 8초씩 기다리게 하지 않고 과감히 비워버려 즉각 '구버전' 렌더링으로 넘깁니다!
+        // 일반 접속자는 무적의 클라우드 전용 서버로 요청합니다. (개발 전엔 NameNotResolved로 바로 실패하여 딜레이 0초)
+        if (WORKER_URL) attemptUrls.push(`${WORKER_URL}?ano=${targetAno}`);
     }
 
     // 단일 프록시 요청 처리 핸들러 (타임아웃 8초)
