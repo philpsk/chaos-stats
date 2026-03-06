@@ -45,7 +45,6 @@ function normalizeAno(val) {
     return val.toString().trim().replace(/^0+/, "") || "0";
 }
 
-// 안전한 엘리먼트 값 설정 함수 (null 에러 방지)
 function updateText(id, text) {
     const el = document.getElementById(id);
     if (el) el.innerText = text;
@@ -59,7 +58,7 @@ function updateColor(id, color) {
     if (el) el.style.color = color;
 }
 
-// 필드 추출기
+// 필드 추출기 (대소문자 무시용 후보군)
 function findVal(obj, keys) {
     if (!obj) return null;
     for (let k of keys) {
@@ -83,9 +82,7 @@ async function init() {
         document.querySelectorAll('th[data-sort]').forEach(th => {
             th.addEventListener('click', () => sortData(th.dataset.sort));
         });
-    } catch (e) {
-        console.error("Init failed", e);
-    }
+    } catch (e) { console.error(e); }
 }
 
 function handleSearch() {
@@ -105,9 +102,17 @@ function sortData(key) {
     if (sortKey === key) sortAsc = !sortAsc;
     else { sortKey = key; sortAsc = (key === 'rank'); }
     filteredData.sort((a, b) => {
-        let va = a[key] || 0, vb = b[key] || 0;
+        let va, vb;
         if (key === 'rank') { va = parseInt(a.RTRank || a.rank || 999, 10); vb = parseInt(b.RTRank || b.rank || 999, 10); }
-        if (key === 'nick') { va = (a.nick || a.nickname || "").toLowerCase(); vb = (b.nick || b.nickname || "").toLowerCase(); return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va); }
+        else if (key === 'nick') { va = (a.nick || a.nickname || "").toLowerCase(); vb = (b.nick || b.nickname || "").toLowerCase(); return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va); }
+        else if (key === 'wr') {
+            const wA = parseInt(findVal(a, ['WinCount', 'winCount', 'win']) || 0, 10);
+            const lA = parseInt(findVal(a, ['LoseCount', 'loseCount', 'lose']) || 0, 10);
+            const wB = parseInt(findVal(b, ['WinCount', 'winCount', 'win']) || 0, 10);
+            const lB = parseInt(findVal(b, ['LoseCount', 'loseCount', 'lose']) || 0, 10);
+            va = (wA + lA) > 0 ? (wA / (wA + lA)) : 0;
+            vb = (wB + lB) > 0 ? (wB / (wB + lB)) : 0;
+        } else { va = a[key] || 0; vb = b[key] || 0; }
         return sortAsc ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
     });
     currentPage = 1; renderTable();
@@ -123,9 +128,17 @@ function renderTable() {
         const norm = normalizeAno(ano);
         const nick = u.nick || u.nickname || "Unknown";
         const grade = u.gradeName || u.grade || "---";
-        const win = parseInt(u.winCount || u.win || 0, 10);
-        const loss = parseInt(u.loseCount || u.lose || 0, 10);
-        const wr = (win + loss) > 0 ? ((win / (win + loss)) * 100).toFixed(1) : 0;
+
+        // 필드명 수정 (WinCount, LoseCount 준수)
+        const win = parseInt(findVal(u, ['WinCount', 'winCount', 'win']) || 0, 10);
+        const loss = parseInt(findVal(u, ['LoseCount', 'loseCount', 'lose']) || 0, 10);
+
+        // 승률 계산 시 필드에 이미 있는 값 우선 사용하되 없으면 계산
+        let wrRaw = findVal(u, ['WinRate_InclDisc', 'winRate']);
+        let wr = 0;
+        if (wrRaw) wr = String(wrRaw).replace('%', '');
+        else wr = (win + loss) > 0 ? ((win / (win + loss)) * 100).toFixed(1) : 0;
+
         const rank = u.RTRank || u.rank || "---";
         const detail = userDetails[norm] || {};
         const heroes = u.characterList || detail.characterList || [];
@@ -144,7 +157,6 @@ function renderPagination() {
 
 window.goToPage = (p) => { currentPage = parseInt(p, 10); renderTable(); };
 
-// [FINAL] 상세 정보 표시용 함수 (극강의 안정성)
 async function selectUser(ano) {
     const norm = normalizeAno(ano);
     const user = allData.find(u => normalizeAno(u.userANO || u.ano) === norm);
@@ -154,7 +166,6 @@ async function selectUser(ano) {
 
     if (!user) return;
 
-    // 1. 헤더 정보 업데이트 (Try-Catch로 보호)
     try {
         const curNick = user.nick || user.nickname || "Unknown";
         const nHistory = (detail.nickHistory || []).map(n => String(n).trim()).filter(n => n && n !== "Unknown" && n !== curNick);
@@ -167,24 +178,25 @@ async function selectUser(ano) {
         updateColor('user-grade', getGradeColor(user.gradeName || user.grade));
         updateText('user-rank', `${user.RTRank || user.rank || '---'}위`);
 
-        // 왼쪽 패널 상단
         updateText('stat-nick', curNick);
         updateText('stat-prev-nicks', unique.join(', ') || '---');
         updateText('stat-ano-val', user.userANO || user.ano || ano);
-    } catch (e) { console.error("Header update error", e); }
+    } catch (e) { console.error(e); }
 
-    // 2. 전적 정보 업데이트
     try {
-        const w = parseInt(findVal(user, ['winCount', 'win', 'WinCount']) || swl.totalWinCount || 0, 10);
-        const l = parseInt(findVal(user, ['loseCount', 'lose', 'LoseCount']) || swl.totalLoseCount || 0, 10);
+        const w = parseInt(findVal(user, ['WinCount', 'winCount', 'win']) || swl.totalWinCount || 0, 10);
+        const l = parseInt(findVal(user, ['LoseCount', 'loseCount', 'lose']) || swl.totalLoseCount || 0, 10);
         const p = parseInt(findVal(user, ['playCount', 'PlayCount']) || swl.playCount || (w + l) || 1, 10);
-        const wr = findVal(user, ['winRate', 'WinRate_InclDisc']) || swl.totalWinRate || Math.round((w / p) * 100);
+
+        let wrRaw = findVal(user, ['WinRate_InclDisc', 'winRate']) || swl.totalWinRate;
+        let wr = 0;
+        if (wrRaw) wr = String(wrRaw).replace('%', '');
+        else wr = Math.round((w / p) * 100);
 
         updateHtml('stat-season-rec', `${p}전 <span style="color:#238636">${w}승</span> <span style="color:#da3633">${l}패</span> (${wr}%)`);
         updateText('user-season-wr', `${wr}%`);
-    } catch (e) { console.error("Record update error", e); }
+    } catch (e) { console.error(e); }
 
-    // 3. 기여도 및 세부 수치
     try {
         const tc = findVal(basic, ['totalContribution']) || findVal(user, ['totalContribute', 'avgContribute']) || 0;
         const cc = findVal(basic, ['combatContribution']) || findVal(user, ['combatContributeAvg']) || 0;
@@ -199,9 +211,8 @@ async function selectUser(ano) {
         updateText('stat-avg-lv', `Lv.${lv}`);
         updateText('stat-kda', Number(kda).toFixed(2));
         updateText('stat-avg-gold', Number(gold).toLocaleString());
-    } catch (e) { console.error("Stats update error", e); }
+    } catch (e) { console.error(e); }
 
-    // 4. 실시간 조회
     try {
         updateHtml('stat-total-rec', '<span style="color:#888">확인 중...</span>');
         updateText('stat-consecutive', "---");
@@ -217,7 +228,6 @@ async function selectUser(ano) {
         }).catch(() => { updateText('stat-total-rec', '조회 실패'); });
     } catch (e) { }
 
-    // 5. 영웅 리스트
     try {
         const h = u.characterList || detail.characterList || [];
         updateHtml('hero-list', `<div style="display:grid; grid-template-columns: repeat(8, 34px); gap:8px;">${h.slice(0, 16).map(c => `<img src="img_hero/${c.characterNo || c}.png" class="hero-mini-icon" style="width:34px; height:34px;" onerror="this.src='img_hero/nop.png'">`).join('')}</div>`);
