@@ -361,8 +361,6 @@ function collectAllObjects(obj, results = []) {
 
 async function fetchAllRecord(ano, rawAno) {
     const targetAno = String(rawAno || ano);
-    const dbInfo = userDetails[targetAno] || {};
-    if (dbInfo.rank_all_wl) return dbInfo.rank_all_wl;
 
     console.log(`Real-time fetch (Total & Streak) for ANO: ${targetAno}`);
 
@@ -509,12 +507,12 @@ async function selectUser(ano) {
         els.stats.nick.innerText = user.nick || user.nickname || '---';
         els.stats.anoVal.innerText = displayAno;
 
-        // [수정] 시즌 전적 필드 호환성 강화: 모든 가능성 있는 필드명 체크
+        // [수정] 시즌 전적 필드 우선순위 교정: 랭킹 API(최신 데이터) 우선, DB.json(구버전) 후순위
         const swl = detail.rank_season_wl || {};
-        const swin = parseInt(swl.totalWinCount || user.WinCount || swl.winCount || user.winCount || user.win || 0, 10);
-        const sloss = parseInt(swl.totalLoseCount || user.LoseCount || swl.loseCount || user.loseCount || user.lose || 0, 10);
-        const spc = parseInt(swl.playCount || user.playCount || 0, 10) || (swin + sloss);
-        const swr = swl.totalWinRate || user.WinRate_InclDisc || user.winRate || (spc > 0 ? Math.round((swin / spc) * 100) : 0);
+        const swin = parseInt(user.win || user.winCount || user.WinCount || swl.totalWinCount || swl.winCount || 0, 10);
+        const sloss = parseInt(user.lose || user.loseCount || user.LoseCount || swl.totalLoseCount || swl.loseCount || 0, 10);
+        const spc = parseInt(user.playCount || swl.playCount || 0, 10) || (swin + sloss);
+        const swr = user.winRate || user.WinRate_InclDisc || swl.totalWinRate || (spc > 0 ? Math.round((swin / spc) * 100) : 0);
         els.stats.seasonRec.innerHTML = `${spc}전 <span style="color:#238636">${swin}승</span> <span style="color:#da3633">${sloss}패</span> (${String(swr).replace('%', '')}%)`;
 
         // [수정] KDA 계산: 데스크톱 버전에 맞게 단일 수치(killDieAssistRate) 우선 사용
