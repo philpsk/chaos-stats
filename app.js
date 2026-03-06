@@ -538,22 +538,23 @@ function renderPagination() {
     let html = '';
 
     if (totalPages > 1) {
-        html += `<button onclick="goToPage(1)" ${currentPage === 1 ? 'disabled' : ''}>&laquo;</button>`;
-        html += `<button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>&lsaquo;</button>`;
+        html += `<button onclick="goToPage(1)" class="pg-btn" ${currentPage === 1 ? 'disabled' : ''}>&laquo;</button>`;
+        html += `<button onclick="goToPage(${currentPage - 1})" class="pg-btn" ${currentPage === 1 ? 'disabled' : ''}>&lsaquo;</button>`;
 
         let startP = Math.max(1, currentPage - 2);
         let endP = Math.min(totalPages, startP + 4);
         if (endP - startP < 4) startP = Math.max(1, endP - 4);
 
         for (let i = startP; i <= endP; i++) {
-            html += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
+            html += `<button onclick="goToPage(${i})" class="pg-btn ${i === currentPage ? 'active' : ''}">${i}</button>`;
         }
 
-        html += `<button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>&rsaquo;</button>`;
-        html += `<button onclick="goToPage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>&raquo;</button>`;
+        html += `<button onclick="goToPage(${currentPage + 1})" class="pg-btn" ${currentPage === totalPages ? 'disabled' : ''}>&rsaquo;</button>`;
+        html += `<button onclick="goToPage(${totalPages})" class="pg-btn" ${currentPage === totalPages ? 'disabled' : ''}>&raquo;</button>`;
     }
 
-    els.pagination.innerHTML = html;
+    if (els.pagination) els.pagination.innerHTML = html;
+    if (els.paginationTop) els.paginationTop.innerHTML = html;
 }
 
 window.goToPage = function (page) {
