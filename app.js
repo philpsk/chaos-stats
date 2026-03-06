@@ -538,19 +538,30 @@ function renderPagination() {
     let html = '';
 
     if (totalPages > 1) {
-        html += `<button onclick="goToPage(1)" class="pg-btn" ${currentPage === 1 ? 'disabled' : ''}>&laquo;</button>`;
-        html += `<button onclick="goToPage(${currentPage - 1})" class="pg-btn" ${currentPage === 1 ? 'disabled' : ''}>&lsaquo;</button>`;
+        // [복구] 10페이지 단위 블록 계산 및 출력
+        const block = 10;
+        const currentBlock = Math.ceil(currentPage / block);
+        const startP = (currentBlock - 1) * block + 1;
+        const endP = Math.min(startP + block - 1, totalPages);
 
-        let startP = Math.max(1, currentPage - 2);
-        let endP = Math.min(totalPages, startP + 4);
-        if (endP - startP < 4) startP = Math.max(1, endP - 4);
+        html += `<button onclick="goToPage(1)" class="pg-btn" title="처음 페이지" ${currentPage === 1 ? 'disabled' : ''}>&laquo;</button>`;
+        html += `<button onclick="goToPage(${startP - 1})" class="pg-btn" title="이전 ${block}페이지" ${startP === 1 ? 'disabled' : ''}>&lsaquo;</button>`;
 
         for (let i = startP; i <= endP; i++) {
             html += `<button onclick="goToPage(${i})" class="pg-btn ${i === currentPage ? 'active' : ''}">${i}</button>`;
         }
 
-        html += `<button onclick="goToPage(${currentPage + 1})" class="pg-btn" ${currentPage === totalPages ? 'disabled' : ''}>&rsaquo;</button>`;
-        html += `<button onclick="goToPage(${totalPages})" class="pg-btn" ${currentPage === totalPages ? 'disabled' : ''}>&raquo;</button>`;
+        html += `<button onclick="goToPage(${endP + 1})" class="pg-btn" title="다음 ${block}페이지" ${endP === totalPages ? 'disabled' : ''}>&rsaquo;</button>`;
+        html += `<button onclick="goToPage(${totalPages})" class="pg-btn" title="마지막 페이지" ${currentPage === totalPages ? 'disabled' : ''}>&raquo;</button>`;
+
+        // [복구] 직접 입력 이동(Jump) UI 컨테이너
+        html += `
+            <div class="pg-input-wrapper">
+                <input type="number" class="pg-input" min="1" max="${totalPages}" value="${currentPage}" onkeydown="if(event.key==='Enter') goToPage(this.value)">
+                <span class="total-pg-label">/ ${totalPages}</span>
+                <button class="pg-btn" onclick="goToPage(this.previousElementSibling.previousElementSibling.value)">이동</button>
+            </div>
+        `;
     }
 
     if (els.pagination) els.pagination.innerHTML = html;
@@ -558,8 +569,9 @@ function renderPagination() {
 }
 
 window.goToPage = function (page) {
-    if (page < 1 || page > Math.ceil(filteredData.length / pageSize)) return;
-    currentPage = page;
+    const p = parseInt(page, 10);
+    if (isNaN(p) || p < 1 || p > Math.ceil(filteredData.length / pageSize)) return;
+    currentPage = p;
     renderTable();
 };
 
