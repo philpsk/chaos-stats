@@ -468,12 +468,9 @@ async function selectUser(ano) {
 
         renderHeroList(detail);
 
-        // [수정] 랭대 총전적 & 연승 정보 Fallback 로직 강화
-        const fallbackTotalRec = detail.rank_all_wl || `${user.playCount || swin + sloss}전 ${swin}승 ${sloss}패 (${swr}%)`;
-        const fallbackCon = detail.winLoseTendency || '---';
-
-        els.stats.totalRec.innerHTML = `<span class="loading-text" style="color:#888">${fallbackTotalRec}</span>`;
-        els.stats.consecutive.innerHTML = `<span class="loading-text" style="color:#888">${fallbackCon}</span>`;
+        // [수정] 랭대 총전적 & 연승 정보 로딩 상태 유지 (즉시 Fallback 제거)
+        els.stats.totalRec.innerHTML = '<span class="loading-text" style="color:#888">실시간 확인 중...</span>';
+        els.stats.consecutive.innerHTML = '<span class="loading-text" style="color:#888">...</span>';
 
         fetchAllRecord(ano, displayAno).then(summary => {
             if (summary) {
@@ -487,7 +484,9 @@ async function selectUser(ano) {
                     else els.stats.consecutive.innerText = conStr;
                 }
             } else {
-                // 실시간 실패 시 DB에 기존 정보가 있으면 일반 텍스트로 표시
+                // 실패 시에만 기존 데이터 표시
+                const fallbackTotalRec = detail.rank_all_wl || `${user.playCount || swin + sloss}전 ${swin}승 ${sloss}패 (${swr}%)`;
+                const fallbackCon = detail.winLoseTendency || '---';
                 els.stats.totalRec.innerText = fallbackTotalRec;
                 els.stats.consecutive.innerText = fallbackCon;
             }
