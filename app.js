@@ -437,19 +437,28 @@ async function selectUser(ano) {
         els.stats.nick.innerText = user.nick || user.nickname || '---';
         els.stats.anoVal.innerText = displayAno;
 
-        // [수정] 시즌 전적 필드 호환성 강화: win/winCount, lose/loseCount 모두 체크
+        // [수정] 시즌 전적 필드 호환성 강화: 모든 가능성 있는 필드명 체크
         const swl = detail.rank_season_wl || {};
-        const swin = parseInt(swl.winCount || swl.win || user.win || user.winCount || 0, 10);
-        const sloss = parseInt(swl.loseCount || swl.lose || user.lose || user.loseCount || 0, 10);
-        const spc = parseInt(swl.playCount || swl.PlayCount || user.playCount || 0, 10) || (swin + sloss);
-        const swr = swl.winRate || user.winRate || (spc > 0 ? Math.round((swin / spc) * 100) : 0);
-        els.stats.seasonRec.innerHTML = `${spc}전 <span style="color:#238636">${swin}승</span> <span style="color:#da3633">${sloss}패</span> (${swr}%)`;
+        const swin = parseInt(swl.totalWinCount || user.WinCount || swl.winCount || user.winCount || user.win || 0, 10);
+        const sloss = parseInt(swl.totalLoseCount || user.LoseCount || swl.loseCount || user.loseCount || user.lose || 0, 10);
+        const spc = parseInt(swl.playCount || user.playCount || 0, 10) || (swin + sloss);
+        const swr = swl.totalWinRate || user.WinRate_InclDisc || user.winRate || (spc > 0 ? Math.round((swin / spc) * 100) : 0);
+        els.stats.seasonRec.innerHTML = `${spc}전 <span style="color:#238636">${swin}승</span> <span style="color:#da3633">${sloss}패</span> (${String(swr).replace('%', '')}%)`;
 
-        // 기타 상세 스탯 (기존 DB 정보 우선)
-        els.stats.totalCont.innerText = Number(basic.totalContribution || user.totalContribution || 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        // [수정] KDA 계산: DB의 Sum 데이터를 플레이 횟수로 나누어 평균 산출
+        const kSum = parseInt(user.killCntSum || 0, 10);
+        const dSum = parseInt(user.dieCntSum || 0, 10);
+        const aSum = parseInt(user.assistCntSum || 0, 10);
+        const pCountForKda = spc > 0 ? spc : 1;
+
+        const avgK = (kSum / pCountForKda).toFixed(1);
+        const avgD = (dSum / pCountForKda).toFixed(1);
+        const avgA = (aSum / pCountForKda).toFixed(1);
+
+        els.stats.totalCont.innerText = Number(basic.totalContribution || user.totalContribute || user.avgContribute || 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
         els.stats.combatCont.innerText = Number(basic.combatContribution || user.combatContribution || 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-        els.stats.combatRate.innerText = `${(basic.battleJoinRate || user.combatRate || user.combatRateAvg || 0)}%`;
-        els.stats.kda.innerText = `${user.avgKill || 0} / ${user.avgDeath || 0} / ${user.avgAssist || 0}`;
+        els.stats.combatRate.innerText = `${(basic.battleJoinRate || user.killDieAssistRate || 0)}%`;
+        els.stats.kda.innerText = `${avgK} / ${avgD} / ${avgA}`;
         els.stats.avgLv.innerText = `Lv.${(basic.averageCharacterLevel || user.avgLevel || 0)}`;
         els.stats.avgDispell.innerText = `${basic.avgDispell || user.avgDispell || 0}`;
         els.stats.avgPotion.innerText = `${basic.avgPotion || user.avgPotion || 0}`;
