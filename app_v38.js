@@ -266,9 +266,9 @@ async function selectUser(ano) {
     } catch (e) { }
 
     try {
-        const h = u.characterList || detail.characterList || [];
-        updateHtml('hero-list', `<div style="display:grid; grid-template-columns: repeat(8, 34px); gap:8px;">${h.slice(0, 16).map(c => `<img src="img_hero/${c.characterNo || c}.png" class="hero-mini-icon" style="width:34px; height:34px;" onerror="this.src='img_hero/nop.png'">`).join('')}</div>`);
-    } catch (e) { }
+        const charList = user.characterList || detail.characterList || [];
+        updateHtml('hero-list', `<div style="display:grid; grid-template-columns: repeat(8, 34px); gap:8px;">${charList.slice(0, 16).map(c => `<img src="img_hero/${c.characterNo || c}.png" class="hero-mini-icon" style="width:34px; height:34px;" onerror="this.src='img_hero/nop.png'">`).join('')}</div>`);
+    } catch (e) { console.error("Hero list render failed", e); }
 }
 
 init();
