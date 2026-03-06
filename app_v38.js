@@ -45,6 +45,27 @@ function normalizeAno(val) {
     return val.toString().trim().replace(/^0+/, "") || "0";
 }
 
+function getGradeWeight(grade) {
+    if (!grade) return 0;
+    const g = String(grade);
+    let weight = 0;
+    if (g.includes('다이아')) weight = 6000;
+    else if (g.includes('루비')) weight = 5000;
+    else if (g.includes('자수정')) weight = 4000;
+    else if (g.includes('사파이어')) weight = 3000;
+    else if (g.includes('에메랄드')) weight = 2000;
+    else if (g.includes('토파즈')) weight = 1000;
+
+    const m = g.match(/\d+/);
+    if (m) {
+        // 단계가 낮을수록(1단계) 더 높은 순위이므로 가중치를 뺌
+        // 5단계: +100, 4단계: +200, ... 1단계: +500
+        const step = parseInt(m[0], 10);
+        weight += (6 - step) * 100;
+    }
+    return weight;
+}
+
 function updateText(id, text) {
     const el = document.getElementById(id);
     if (el) el.innerText = text;
@@ -101,6 +122,16 @@ function handleSearch() {
 function sortData(key) {
     if (sortKey === key) sortAsc = !sortAsc;
     else { sortKey = key; sortAsc = (key === 'rank'); }
+
+    // Update header icons
+    document.querySelectorAll('th[data-sort]').forEach(th => {
+        const k = th.dataset.sort;
+        let txt = th.innerText.replace(/[↕↑↓]/g, '').trim();
+        if (k === sortKey) txt += (sortAsc ? ' ↑' : ' ↓');
+        else txt += ' ↕';
+        th.innerText = txt;
+    });
+
     filteredData.sort((a, b) => {
         let va, vb;
         if (key === 'rank') { va = parseInt(a.RTRank || a.rank || 999, 10); vb = parseInt(b.RTRank || b.rank || 999, 10); }
@@ -112,7 +143,14 @@ function sortData(key) {
             const lB = parseInt(findVal(b, ['LoseCount', 'loseCount', 'lose']) || 0, 10);
             va = (wA + lA) > 0 ? (wA / (wA + lA)) : 0;
             vb = (wB + lB) > 0 ? (wB / (wB + lB)) : 0;
+        } else if (key === 'grade') {
+            va = getGradeWeight(a.gradeName || a.grade);
+            vb = getGradeWeight(b.gradeName || b.grade);
+            // 등급은 기본적으로 높은 등급이 위로 오도록 (내림차순 가중치)
+            return sortAsc ? vb - va : va - vb;
         } else { va = a[key] || 0; vb = b[key] || 0; }
+
+        if (va === vb) return 0;
         return sortAsc ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
     });
     currentPage = 1; renderTable();
@@ -195,12 +233,16 @@ async function selectUser(ano) {
         const cr = findVal(basic, ['battleJoinRate']) || findVal(user, ['combatRateAvg', 'combatRate']) || 0;
         const lv = findVal(basic, ['averageCharacterLevel']) || findVal(user, ['lastLevelAvg', 'avgLevel']) || 0;
         const kda = findVal(user, ['killDieAssistRate']) || detail.kda || 0;
+        const dispell = findVal(basic, ['avgDispell']) || findVal(user, ['dispellCntAvg']) || 0;
+        const potion = findVal(basic, ['avgPotion']) || findVal(user, ['potionCntAvg']) || 0;
         const gold = findVal(basic, ['averageGetGold']) || findVal(user, ['totalGoldAvg', 'avgGold']) || 0;
         updateText('stat-total-cont', Number(tc).toLocaleString());
         updateText('stat-combat-cont', Number(cc).toLocaleString());
         updateText('stat-combat-rate', `${cr}%`);
         updateText('stat-avg-lv', `Lv.${lv}`);
         updateText('stat-kda', Number(kda).toFixed(2));
+        updateText('stat-avg-dispell', `${dispell}회`);
+        updateText('stat-avg-potion', `${potion}회`);
         updateText('stat-avg-gold', Number(gold).toLocaleString());
     } catch (e) { console.error(e); }
 
