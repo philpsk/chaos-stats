@@ -350,6 +350,7 @@ async function fetchAllRecord(ano, rawAno) {
                 const summary = formatWLMerged(collectAllObjects(parsedData));
                 if (summary) {
                     console.log(`✓ Success via Static Cache!`);
+                    window.realtimeCache[targetAno] = summary; // 캐시 저장
                     return summary;
                 }
             }
@@ -369,13 +370,9 @@ async function fetchAllRecord(ano, rawAno) {
     if (isLocal) {
         attemptUrls.push(`/api/record?ano=${targetAno}`); // 제일 빠른 로컬 파이썬 서버
     } else {
-        // [속도 최적화] GAS 서버의 초기 딜레이(2~3초)를 극복하기 위해 가장 강력한 public 프록시들을 동시 출격(레이싱)시킵니다.
-        // 먼저 도착하는 응답(보통 0.5초 이내)을 그대로 화면에 먼저 꽂아 넣습니다!
+        // 보안/안정성을 위해 무료 퍼블릭 프록시를 제외하고 오직 사용자님의 Google Apps Script 하나만 단일 사용합니다.
+        // 구글 서버 종특상 1.5초~2.5초 가량의 리디렉션 콜드스타트가 발생할 수 있습니다.
         if (WORKER_URL) attemptUrls.push(`${WORKER_URL}?ano=${targetAno}`);
-
-        const bypassCacheUrl = targetUrl + '&_t=' + Date.now();
-        attemptUrls.push(`https://api.allorigins.win/get?url=${encodeURIComponent(bypassCacheUrl)}`);
-        attemptUrls.push(`https://api.codetabs.com/v1/proxy?quest=${bypassCacheUrl}`);
     }
 
     // 단일 프록시 요청 처리 핸들러 (타임아웃 8초)
