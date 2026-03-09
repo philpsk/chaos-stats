@@ -410,16 +410,10 @@ async function selectUser(ano, trElement) {
 
     // 패널 열기
     const panel = document.getElementById('sliding-profile');
-    const tContainer = document.getElementById('table-container');
-    const container = document.querySelector('.container');
-    const dbGrid = document.querySelector('.dashboard-grid');
     if (panel) {
         panel.classList.add('open');
-        panel.scrollTop = 0; // Immediate reset
+        panel.scrollTop = 0;
     }
-    if (tContainer) tContainer.classList.add('panel-open');
-    if (container) container.classList.add('panel-open');
-    if (dbGrid) dbGrid.classList.add('panel-open');
 
     // 행 하이라이트
     document.querySelectorAll('#ranking-body tr').forEach(tr => {
@@ -601,13 +595,7 @@ async function selectUser(ano, trElement) {
 
 window.closeProfilePanel = () => {
     const panel = document.getElementById('sliding-profile');
-    const tContainer = document.getElementById('table-container');
-    const container = document.querySelector('.container');
-    const dbGrid = document.querySelector('.dashboard-grid');
     if (panel) panel.classList.remove('open');
-    if (tContainer) tContainer.classList.remove('panel-open');
-    if (container) container.classList.remove('panel-open');
-    if (dbGrid) dbGrid.classList.remove('panel-open');
 
     document.querySelectorAll('#ranking-body tr').forEach(tr => {
         tr.style.backgroundColor = '';

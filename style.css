@@ -437,21 +437,25 @@ header {
 }
 
 .sliding-profile-panel {
-  width: 0;
-  height: 100%;
+  position: fixed;
+  top: 0;
+  right: -560px;
+  width: 535px;
+  height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
-  transition: width 0.3s ease;
+  transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   background: #1c2128;
   border-left: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   scrollbar-width: thin;
+  z-index: 500;
+  box-shadow: -6px 0 24px rgba(0, 0, 0, 0.5);
 }
 
 .sliding-profile-panel.open {
-  width: 535px;
-  /* Slightly wider to accommodate scrollbar */
+  right: 0;
 }
 
 .panel-content {
