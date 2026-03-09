@@ -217,8 +217,10 @@ header {
   gap: 12px;
   flex: 1;
   min-height: 0;
-  /* flex 자식에서 overflow 적용 위해 필수 */
-  align-items: start;
+  overflow: hidden;
+  /* Prevent grid overflow */
+  align-items: stretch;
+  /* Make children fill height */
 }
 
 /* 왼쪽 패널: sticky + 내부 스크롤 */
@@ -231,8 +233,10 @@ header {
 /* 오른쪽 패널: 내부 스크롤만 */
 .right-panel {
   height: 100%;
-  overflow-y: auto;
-  padding-right: 4px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-right: 0;
 }
 
 .right-panel::-webkit-scrollbar {
@@ -377,4 +381,242 @@ header {
   transform: scale(1.2);
   z-index: 10;
   border-color: var(--accent-blue);
+}
+
+/* --- 슬라이딩 프로필 패널 --- */
+.rank-section-wrapper {
+  display: flex;
+  width: 100%;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.table-container {
+  flex: 1;
+  transition: all 0.3s ease;
+  overflow-x: auto;
+  min-width: 0;
+  /* Flexbox text overflow fix */
+}
+
+/* Panel Open State Layout Adjustments */
+.dashboard-grid.panel-open {
+  grid-template-columns: 360px 1fr;
+  gap: 12px;
+}
+
+.dashboard-grid.panel-open .left-panel {
+  display: block !important;
+  /* Sidebar persists */
+}
+
+.table-container.panel-open .hide-on-panel {
+  display: none !important;
+}
+
+.table-container.panel-open {
+  flex: 1;
+  min-width: 250px;
+  /* Allow ranking table to shrink while open */
+  padding-right: 0;
+}
+
+.rank-section-wrapper {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.table-container {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.sliding-profile-panel {
+  width: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: width 0.3s ease;
+  background: #1c2128;
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: thin;
+}
+
+.sliding-profile-panel.open {
+  width: 535px;
+  /* Slightly wider to accommodate scrollbar */
+}
+
+.panel-content {
+  padding: 15px;
+  width: 100%;
+  /* Flexible width to fit inside scrollbar area */
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.close-panel-btn {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  align-self: flex-end;
+  background: var(--card-bg);
+  /* Match panel background */
+  color: #C9D1D9;
+  border: 1px solid var(--border-color);
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: bold;
+  transition: all 0.2s;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.close-panel-btn:hover {
+  background: #F85149;
+  color: #FFFFFF;
+}
+
+/* Python V82 UI Style Cards */
+.sp-card {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+.sp-card-title {
+  background: #1c2128;
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  font-family: 'Pretendard', 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+  padding: 6px 12px;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.sp-card-body {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  padding: 12px;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+/* Records Block */
+.record-block {
+  flex: 1;
+  background: #1c2128;
+  border-radius: 6px;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.record-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+  margin-bottom: 8px;
+}
+
+.record-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.record-label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.record-val {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.record-swr {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.record-bar-bg {
+  height: 6px;
+  background: var(--border-color);
+  border-radius: 3px;
+  width: 200px;
+  max-width: 100%;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.record-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: #238636;
+}
+
+.extra-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+}
+
+.extra-label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.extra-val {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* Heroes Table inside Panel */
+.sp-hero-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sp-hero-table th {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sp-hero-table td {
+  font-size: 0.85rem;
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #e0e0e0;
+}
+
+.sp-hero-col-rank {
+  color: var(--gold);
+  font-family: 'Roboto Mono', monospace;
+  font-weight: bold;
+}
+
+.sp-hero-col-play {
+  color: #a0a0c0;
+}
+
+.sp-percent-val {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 700;
 }
