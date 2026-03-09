@@ -306,17 +306,17 @@ header {
   border-collapse: collapse;
 }
 
-.ranking-table th {
+.ranking-table thead th {
   text-align: left;
   padding: 8px 10px;
   color: var(--accent-blue);
   font-size: 0.8rem;
-  border-bottom: 2px solid var(--border-color);
   position: sticky !important;
-  top: -12px !important;
-  /* Panel scope relative to card top */
-  background: var(--card-bg) !important;
-  z-index: 10 !important;
+  top: 0 !important;
+  background: #1c2128 !important;
+  /* 다크 배경색으로 고정 */
+  z-index: 100 !important;
+  border-bottom: 2px solid var(--accent-blue) !important;
 }
 
 .ranking-table td {
