@@ -127,7 +127,13 @@ async function init() {
 }
 
 function handleSearch() {
-    const v = document.getElementById('search-input')?.value.toLowerCase() || "";
+    const input = document.getElementById('search-input');
+    const v = input?.value.toLowerCase() || "";
+    const clearBtn = document.getElementById('search-clear');
+
+    // Sync clear button visibility
+    if (clearBtn) clearBtn.style.display = v.length > 0 ? 'block' : 'none';
+
     filteredData = allData.filter(u => {
         const nick = (u.nick || u.nickname || "").toLowerCase();
         const ano = (u.userANO || u.ano || "").toString();
@@ -137,6 +143,19 @@ function handleSearch() {
         return nick.includes(v) || ano.includes(v) || history.some(h => h.includes(v));
     });
     currentPage = 1; renderTable();
+}
+
+function setupSearchClear() {
+    const input = document.getElementById('search-input');
+    const clearBtn = document.getElementById('search-clear');
+    if (!input || !clearBtn) return;
+
+    clearBtn.addEventListener('click', () => {
+        input.value = '';
+        clearBtn.style.display = 'none';
+        input.focus();
+        handleSearch();
+    });
 }
 
 function sortData(key) {
