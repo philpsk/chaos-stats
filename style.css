@@ -397,17 +397,19 @@ header {
   display: flex;
   width: 100%;
   flex: 1;
-  overflow: visible;
-  /* sticky 헤더를 위해 변경 */
+  min-height: 0;
+  height: 100%;
+  overflow: visible !important;
+  /* sticky 헤더를 위해 필수 */
   position: relative;
 }
 
 .table-container {
   flex: 1;
   transition: all 0.3s ease;
-  overflow-x: auto;
+  overflow: visible !important;
+  /* sticky 기능을 위해 가시성 설정 */
   min-width: 0;
-  /* Flexbox text overflow fix */
 }
 
 /* Panel Open State Layout Adjustments */
@@ -432,13 +434,6 @@ header {
   padding-right: 0;
 }
 
-.rank-section-wrapper {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  height: 100%;
-  overflow: hidden;
-}
 
 .table-container {
   flex: 1;
