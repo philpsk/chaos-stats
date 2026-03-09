@@ -629,3 +629,48 @@ header {
   font-family: 'Roboto Mono', monospace;
   font-weight: 700;
 }
+
+/* 검색창 실시간 삭제 버튼 포함 컨테이너 */
+.search-container-v2 {
+  position: relative;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.search-input-v2 {
+  width: 100%;
+  padding: 10px 35px 10px 15px;
+  background: var(--card-bg);
+  border: 1px solid var(--accent-blue);
+  border-radius: 8px;
+  color: white;
+  font-size: 0.9rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s;
+}
+
+.search-input-v2:focus {
+  border-color: var(--purple);
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 8px rgba(163, 113, 247, 0.3);
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #8b949e;
+  font-size: 1.2rem;
+  font-weight: bold;
+  user-select: none;
+  display: none;
+  /* 기본 숨김 */
+  line-height: 1;
+}
+
+.search-clear-btn:hover {
+  color: #f85149;
+}

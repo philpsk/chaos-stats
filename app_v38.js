@@ -115,6 +115,7 @@ async function init() {
         }
         filteredData = [...allData];
         renderTable();
+        setupSearchClear();
         document.getElementById('search-input')?.addEventListener('input', handleSearch);
         document.querySelectorAll('th[data-sort]').forEach(th => {
             th.addEventListener('click', () => sortData(th.dataset.sort));

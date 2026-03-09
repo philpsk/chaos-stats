@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>V88 FINAL - [16 확장 완료]</title>
-  <link rel="stylesheet" href="style.css?v=20260310_V5">
+  <link rel="stylesheet" href="style.css?v=20260310_V6">
 </head>
 
 <body>
@@ -44,6 +44,11 @@
     <main class="dashboard-grid">
       <!-- Sidebar stats -->
       <aside class="left-panel">
+        <div class="search-container-v2">
+          <input type="text" id="search-input" class="search-input-v2" placeholder="닉네임 또는 ANO 검색..."
+            autocomplete="off">
+          <span id="search-clear" class="search-clear-btn" title="검색어 지우기">×</span>
+        </div>
         <div class="card">
           <h2 class="card-title">Detailed Information</h2>
           <div id="stats-container">
@@ -84,10 +89,8 @@
       <section class="right-panel">
         <div class="rank-fixed-header">
           <div
-            style="display: flex; align-items: center; gap: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 0;">
+            style="display: flex; align-items: center; gap: 20px; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
             <h2 class="card-title" style="margin-bottom: 0; white-space: nowrap;">Season Rankings</h2>
-            <input type="text" id="search-input" placeholder="닉네임 또는 ANO 검색..." autocomplete="off"
-              style="padding: 7px 15px; background: rgba(0,0,0,0.2); border: 1px solid var(--accent-blue); border-radius: 8px; color: white; font-size: 0.85rem; width: 220px; outline: none;">
           </div>
         </div>
 
