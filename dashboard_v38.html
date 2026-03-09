@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>V88 FINAL - [16 확장 완료]</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20260310_V3">
 </head>
 
 <body>
@@ -80,7 +80,7 @@
 
       <!-- Main ranking table -->
       <section class="right-panel">
-        <div class="card" style="min-height: 600px; display: flex; flex-direction: column;">
+        <div class="card" style="height: 100%; display: flex; flex-direction: column;">
           <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
             <h2 class="card-title" style="margin-bottom: 0; min-width: 150px;">Season Rankings</h2>
@@ -89,23 +89,124 @@
                 style="padding: 7px 15px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: white; font-size: 0.85rem; width: 220px; outline: none; border-color: var(--accent-blue);">
             </div>
           </div>
-          <div style="overflow-x: auto; flex: 1;">
-            <table class="ranking-table">
-              <thead>
-                <tr>
-                  <th data-sort="rank" style="cursor:pointer; user-select:none;">순위 ↕</th>
-                  <th data-sort="nick" style="cursor:pointer; user-select:none;">닉네임 ↕</th>
-                  <th style="width:240px; text-align:center;">선호 영웅</th>
-                  <th data-sort="grade" style="cursor:pointer; user-select:none; width:120px; padding-left:20px;">등급 ↕
-                  </th>
-                  <th data-sort="wr" style="cursor:pointer; user-select:none; width:180px;">전적 (승률) ↕</th>
-                  <th style="width:100px;">ANO</th>
-                </tr>
-              </thead>
-              <tbody id="ranking-body">
-                <!-- Rows injected by JS -->
-              </tbody>
-            </table>
+          <div class="rank-section-wrapper">
+            <div id="table-container" class="table-container">
+              <table class="ranking-table">
+                <thead>
+                  <tr>
+                    <th data-sort="rank" style="cursor:pointer; user-select:none;">순위 ↕</th>
+                    <th data-sort="nick" style="cursor:pointer; user-select:none;">닉네임 ↕</th>
+                    <th class="hide-on-panel" style="width:240px; text-align:center;">선호 영웅</th>
+                    <th class="hide-on-panel" data-sort="grade"
+                      style="cursor:pointer; user-select:none; width:120px; padding-left:20px;">등급 ↕</th>
+                    <th class="hide-on-panel" data-sort="wr" style="cursor:pointer; user-select:none; width:180px;">전적
+                      (승률) ↕</th>
+                    <th style="width:100px;">ANO</th>
+                  </tr>
+                </thead>
+                <tbody id="ranking-body">
+                  <!-- Rows injected by JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 우측 슬라이딩 프로필 패널 -->
+            <div id="sliding-profile" class="sliding-profile-panel">
+              <div class="panel-content">
+                <button class="close-panel-btn" onclick="closeProfilePanel()">✖ 닫기</button>
+
+                <!-- PROFILE CARD -->
+                <div class="sp-card">
+                  <div class="sp-card-title">PROFILE</div>
+                  <div class="sp-card-body">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 4px;">
+                      <div style="display:flex; align-items:baseline; gap: 10px;">
+                        <h2 id="sp-nick" style="font-size:1.6rem; font-weight:700; color:#fff; margin:0;">닉네임</h2>
+                        <span id="sp-grade" style="font-weight:bold; font-size:1rem;">등급</span>
+                      </div>
+                      <div style="text-align: right;">
+                        <span style="font-size:0.8rem; color:var(--text-dim); display:block;">시즌 순위</span>
+                        <span id="sp-rank"
+                          style="font-size:1.4rem; font-weight:800; color:#ffa657; line-height:1;">--위</span>
+                      </div>
+                    </div>
+                    <div
+                      style="display:flex; justify-content:space-between; align-items:center; background:var(--border-color); padding:4px 8px; border-radius:4px; margin-bottom:4px;">
+                      <span id="sp-ano" style="color:var(--text-dim); font-size:0.85rem;">ANO ---</span>
+                    </div>
+                    <div id="sp-memo-container"
+                      style="display:none; background:rgba(255,255,255,0.05); padding:6px 10px; border-radius:4px; margin-top:8px;">
+                      <span id="sp-memo" style="color:#8b949e; font-size:0.9rem; font-weight:500;">---</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- RECORDS CARD (flex 레이아웃 유지) -->
+                <div class="sp-card">
+                  <div class="sp-card-title">RECORDS</div>
+                  <div class="sp-card-body" style="padding: 0; background: transparent; border: none;">
+                    <div style="display:flex; gap: 8px;">
+                      <!-- 전체 전적 -->
+                      <div class="record-block">
+                        <div class="record-title">전체 전적</div>
+                        <div class="record-row">
+                          <span class="record-label">전적</span>
+                          <span class="record-val" id="sp-all-rec">0승 0패 0무</span>
+                        </div>
+                        <div class="record-swr" id="sp-all-swr">시즌 0%</div>
+                        <div class="record-bar-bg">
+                          <div class="record-bar-fill" id="sp-all-bar" style="width: 0%;"></div>
+                        </div>
+                        <div class="extra-record-rows" id="sp-all-extra">
+                          <!-- JS injected -->
+                        </div>
+                      </div>
+
+                      <!-- 랭킹 전적 -->
+                      <div class="record-block">
+                        <div class="record-title">랭킹 전적</div>
+                        <div class="record-row">
+                          <span class="record-label">전적</span>
+                          <span class="record-val" id="sp-rk-rec">0승 0패 0무</span>
+                        </div>
+                        <div class="record-swr" id="sp-rk-swr">시즌 0%</div>
+                        <div class="record-bar-bg">
+                          <div class="record-bar-fill" id="sp-rk-bar" style="width: 0%;"></div>
+                        </div>
+                        <div class="extra-record-rows" id="sp-rk-extra">
+                          <!-- JS injected -->
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- HEROES CARD -->
+                <div class="sp-card">
+                  <div class="sp-card-title" id="sp-hero-title">선호 영웅 (이번 시즌) (0개)</div>
+                  <div class="sp-card-body" style="padding: 6px;">
+                    <table class="sp-hero-table">
+                      <thead>
+                        <tr>
+                          <th style="width: 30px; padding-left: 2px;">#</th>
+                          <th style="text-align: left;">영웅</th>
+                          <th style="width: 55px; text-align: left; cursor: pointer; white-space: nowrap;"
+                            data-hero-sort="playCnt">판수 ↓</th>
+                          <th style="width: 60px; text-align: left; cursor: pointer; white-space: nowrap;"
+                            data-hero-sort="winningRate">승률 ↕</th>
+                          <th style="width: 80px; text-align: left; cursor: pointer; white-space: nowrap;"
+                            data-hero-sort="partyWinningRate">파티승률 ↕</th>
+                        </tr>
+                      </thead>
+                      <tbody id="sp-hero-list">
+                        <!-- JS injected -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+              </div>
+            </div>
           </div>
           <div id="pagination" style="display:flex; justify-content:center; gap:10px; margin-top:20px;">
             <!-- Pagination injected by JS -->
@@ -116,7 +217,7 @@
     </main>
   </div>
 
-  <script src="app_v38.js?v=20260306_FINAL_V38"></script>
+  <script src="app_v38.js?v=20260310_PREMIUM_V2"></script>
 </body>
 
 </html>

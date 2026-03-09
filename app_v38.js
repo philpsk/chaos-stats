@@ -21,11 +21,17 @@ const HERO_MAP = {
 
 let allData = [];
 let userDetails = {};
+let premiumMap = {};   // ANO → premium entry (preferHero 포함)
 let filteredData = [];
 let currentPage = 1;
 const pageSize = 50;
 let sortKey = 'rank';
 let sortAsc = true;
+
+// 영웅 테이블 정렬 전역 변수
+let currentHeroSortKey = 'playCnt';
+let currentHeroSortAsc = false;
+let currentHeroList = [];
 
 // 유틸리티 함수
 function getGradeColor(grade) {
@@ -91,17 +97,30 @@ function findVal(obj, keys) {
 async function init() {
     try {
         const cb = `cb=${Date.now()}`;
-        const [r1, r2] = await Promise.all([
+        const [r1, r2, r3] = await Promise.all([
             fetch(`V88_FINAL_RANK_DEEP.json?${cb}`),
-            fetch(`DB.json?${cb}`).catch(() => ({ ok: false }))
+            fetch(`DB.json?${cb}`).catch(() => ({ ok: false })),
+            fetch(`V82_FINAL_RANK_PREMIUM.json?${cb}`).catch(() => ({ ok: false }))
         ]);
         if (r1.ok) allData = await r1.json();
         if (r2.ok) userDetails = await r2.json();
+        if (r3.ok) {
+            const premList = await r3.json();
+            // account.ano 또는 account.nickname으로 ANO 매핑
+            premList.forEach(entry => {
+                const acc = entry.account || {};
+                const ano = normalizeAno(acc.ano || acc.userANO || '');
+                if (ano) premiumMap[ano] = entry;
+            });
+        }
         filteredData = [...allData];
         renderTable();
         document.getElementById('search-input')?.addEventListener('input', handleSearch);
         document.querySelectorAll('th[data-sort]').forEach(th => {
             th.addEventListener('click', () => sortData(th.dataset.sort));
+        });
+        document.querySelectorAll('th[data-hero-sort]').forEach(th => {
+            th.addEventListener('click', () => sortHeroData(th.dataset.heroSort));
         });
     } catch (e) { console.error("Init failed", e); }
 }
@@ -156,6 +175,16 @@ function sortData(key) {
     currentPage = 1; renderTable();
 }
 
+function sortHeroData(key) {
+    if (currentHeroSortKey === key) {
+        currentHeroSortAsc = !currentHeroSortAsc;
+    } else {
+        currentHeroSortKey = key;
+        currentHeroSortAsc = false; // Default to descending when changing sort column
+    }
+    fillHeroTable('sp-hero-list', 'sp-hero-title', currentHeroList);
+}
+
 function renderTable() {
     const start = (currentPage - 1) * pageSize;
     const pageData = filteredData.slice(start, start + pageSize);
@@ -176,7 +205,14 @@ function renderTable() {
         const detail = userDetails[norm] || {};
         const heroes = u.characterList || detail.characterList || [];
         const icons = heroes.slice(0, 7).map(c => `<img src="img_hero/${c.characterNo || c}.png" class="hero-mini-icon" onerror="this.src='img_hero/nop.png'">`).join('');
-        return `<tr onclick="selectUser('${ano}')"><td>${rank}</td><td>${nick}</td><td><div class="hero-icons-container">${icons}</div></td><td style="color:${getGradeColor(grade)}">${grade}</td><td><span style="color:#238636">${win}승</span> <span style="color:#da3633">${loss}패</span> <span class="win-rate-pill">${wr}%</span></td><td style="color:#58A6FF">${ano}</td></tr>`;
+        return `<tr onclick="selectUser('${ano}', this)">
+            <td>${rank}</td>
+            <td>${nick}</td>
+            <td class="hide-on-panel"><div class="hero-icons-container">${icons}</div></td>
+            <td class="hide-on-panel" style="color:${getGradeColor(grade)}">${grade}</td>
+            <td class="hide-on-panel"><span style="color:#238636">${win}승</span> <span style="color:#da3633">${loss}패</span> <span class="win-rate-pill">${wr}%</span></td>
+            <td style="color:#58A6FF">${ano}</td>
+        </tr>`;
     }).join('');
     renderPagination();
 }
@@ -198,7 +234,7 @@ function renderPagination() {
     }
 
     let h = `<div class="pagination-area">`;
-    
+
     // 처음/이전 버튼
     h += `<button onclick="goToPage(1)" class="pg-btn" ${currentPage === 1 ? 'disabled' : ''} title="처음으로">«</button>`;
     h += `<button onclick="goToPage(${currentPage - 1})" class="pg-btn" ${currentPage === 1 ? 'disabled' : ''} title="이전">‹</button>`;
@@ -235,45 +271,242 @@ window.goToPage = (p) => {
     if (page > totalPages) page = totalPages;
     currentPage = page;
     renderTable();
+    const tContainer = document.getElementById('table-container');
+    if (tContainer) tContainer.scrollTop = 0;
 };
 
-async function selectUser(ano) {
+// ===========================
+// 승률 색상 (Python r_color 과 동일)
+// ===========================
+function getRateColor(r) {
+    r = Number(r);
+    if (r >= 70) return '#4ade80';
+    if (r >= 55) return '#fbbf24';
+    if (r >= 45) return '#f0a050';
+    return '#f87171';
+}
+
+// ===========================
+// RECORDS 블록 채우기 헬퍼
+// ===========================
+function fillRecordBlock(prefix, rec) {
+    rec = rec || {};
+    const w = Number(rec.winCnt || rec.WinCount || rec.totalWinCount || 0);
+    const l = Number(rec.loseCnt || rec.LoseCount || rec.totalLoseCount || 0);
+    const d = Number(rec.drawCnt || rec.DrawCount || 0);
+    const total = w + l + d;
+
+    // 승률: seasonWinningRate → WinRate_InclDisc → 계산
+    let swr = 0;
+    const swrRaw = rec.seasonWinningRate ?? rec.WinRate_InclDisc;
+    if (swrRaw !== undefined && swrRaw !== null)
+        swr = parseInt(String(swrRaw).replace('%', ''), 10) || 0;
+    else
+        swr = total > 0 ? Math.round((w / total) * 100) : 0;
+
+    const spwr = parseInt(String(rec.seasonPartyWinningRate || 0).replace('%', ''), 10) || 0;
+    const twr = parseInt(String(rec.thisWeekWinningRate || 0).replace('%', ''), 10) || 0;
+    const tpwr = parseInt(String(rec.thisWeekPartyWinningRate || 0).replace('%', ''), 10) || 0;
+    const dc = Number(rec.disconnectCnt || rec.disConnectCount || 0);
+
+    const elRec = document.getElementById(`${prefix}-rec`);
+    const elSwr = document.getElementById(`${prefix}-swr`);
+    const elBar = document.getElementById(`${prefix}-bar`);
+    const elExtra = document.getElementById(`${prefix}-extra`);
+
+    if (elRec) elRec.textContent = `${w}승 ${l}패 ${d}무`;
+    if (elSwr) {
+        elSwr.textContent = `시즌 ${swr}%`;
+        elSwr.style.color = getRateColor(swr);
+    }
+    if (elBar) elBar.style.width = `${Math.min(swr, 100)}%`;
+
+    if (elExtra) {
+        let html = '';
+        html += `<div class="extra-row"><span class="extra-label">이번주 승률</span><span class="extra-val" style="color:${getRateColor(twr)}">${twr}%</span></div>`;
+        html += `<div class="extra-row"><span class="extra-label">시즌 파티 승률</span><span class="extra-val" style="color:${getRateColor(spwr)}">${spwr}%</span></div>`;
+        html += `<div class="extra-row"><span class="extra-label">이번주 파티 승률</span><span class="extra-val" style="color:${getRateColor(tpwr)}">${tpwr}%</span></div>`;
+        if (dc > 0)
+            html += `<div class="extra-row"><span class="extra-label">이탈</span><span class="extra-val" style="color:#f87171">${dc}회</span></div>`;
+        elExtra.innerHTML = html;
+    }
+}
+
+// ===========================
+// HEROES 테이블 채우기 헬퍼
+// ===========================
+function fillHeroTable(tbodyId, titleId, heroList) {
+    const tbody = document.getElementById(tbodyId);
+    const title = document.getElementById(titleId);
+    if (!tbody) return;
+
+    // 현재 테이블에 렌더링 중인 전체 영웅 리스트 저장 (정렬에 사용)
+    currentHeroList = heroList || [];
+
+    // 헤더 정렬 텍스트/화살표 업데이트
+    document.querySelectorAll('th[data-hero-sort]').forEach(th => {
+        const k = th.dataset.heroSort;
+        let txt = th.innerText.replace(/[↕↑↓▼▲]/g, '').trim();
+        if (k === currentHeroSortKey) {
+            txt += (currentHeroSortAsc ? ' ↑' : ' ↓');
+        } else {
+            txt += ' ↕';
+        }
+        th.innerText = txt;
+    });
+
+    const getVal = (h, key) => {
+        if (key === 'playCnt') return Number(h.playCnt || h.playCount || 0);
+        if (key === 'winningRate') return parseInt(String(h.winningRate || h.winRate || 0).replace('%', ''), 10) || 0;
+        if (key === 'partyWinningRate') return parseInt(String(h.partyWinningRate || h.partyWinRate || 0).replace('%', ''), 10) || 0;
+        return 0;
+    };
+
+    // 정렬 로직 적용
+    const sorted = [...currentHeroList].sort((a, b) => {
+        let va = getVal(a, currentHeroSortKey);
+        let vb = getVal(b, currentHeroSortKey);
+
+        if (va < vb) return currentHeroSortAsc ? -1 : 1;
+        if (va > vb) return currentHeroSortAsc ? 1 : -1;
+
+        // 동률일 경우 영웅 이름순 정렬
+        const na = a.name || a.characterName || '';
+        const nb = b.name || b.characterName || '';
+        return na.localeCompare(nb);
+    });
+
+    if (title) title.textContent = `선호 영웅 (이번 시즌) (${sorted.length}개)`;
+
+    tbody.innerHTML = sorted.map((h, i) => {
+        const cno = String(h.characterNo || '');
+        const name = h.name || h.characterName || HERO_MAP[cno] || `Unknown(${cno})`;
+        const pc = Number(h.playCnt || h.playCount || 0);
+        let wr = parseInt(String(h.winningRate || h.winRate || 0).replace('%', ''), 10) || 0;
+        let pwr = parseInt(String(h.partyWinningRate || h.partyWinRate || 0).replace('%', ''), 10) || 0;
+
+        return `<tr>
+            <td class="sp-hero-col-rank">${i + 1}</td>
+            <td>${name}</td>
+            <td class="sp-hero-col-play">${pc}판</td>
+            <td class="sp-percent-val" style="color:${getRateColor(wr)}">${wr}%</td>
+            <td class="sp-percent-val" style="color:${getRateColor(pwr)}">${pwr}%</td>
+        </tr>`;
+    }).join('');
+}
+
+// ===========================
+// 유저 클릭 → 패널 열기
+// ===========================
+async function selectUser(ano, trElement) {
     const norm = normalizeAno(ano);
     const user = allData.find(u => normalizeAno(u.userANO || u.ano) === norm);
     const detail = userDetails[norm] || {};
     const basic = detail.basicInfo || {};
     const swl = detail.rank_season_wl || {};
+    const allWl = detail.rank_all_wl || {};
 
     if (!user) return;
 
+    // 패널 열기
+    const panel = document.getElementById('sliding-profile');
+    const tContainer = document.getElementById('table-container');
+    const container = document.querySelector('.container');
+    const dbGrid = document.querySelector('.dashboard-grid');
+    if (panel) {
+        panel.classList.add('open');
+        panel.scrollTop = 0; // Immediate reset
+    }
+    if (tContainer) tContainer.classList.add('panel-open');
+    if (container) container.classList.add('panel-open');
+    if (dbGrid) dbGrid.classList.add('panel-open');
+
+    // 행 하이라이트
+    document.querySelectorAll('#ranking-body tr').forEach(tr => {
+        tr.style.backgroundColor = '';
+        tr.style.outline = '';
+    });
+    if (trElement) {
+        trElement.style.backgroundColor = 'rgba(88, 166, 255, 0.15)';
+        trElement.style.outline = '1px solid var(--accent-blue)';
+    }
+
     try {
-        const curNick = user.nick || user.nickname || "Unknown";
-        const nHistory = (detail.nickHistory || []).map(n => String(n).trim()).filter(n => n && n !== "Unknown" && n !== curNick);
+        const curNick = user.nick || user.nickname || 'Unknown';
+        const nHistory = (detail.nickHistory || []).map(n => String(n).trim()).filter(n => n && n !== 'Unknown' && n !== curNick);
         const unique = [...new Set(nHistory)];
-        const prevText = unique.length > 0 ? ` (전: ${unique.join(', ')})` : "";
+        const prevText = unique.length > 0 ? ` (전: ${unique.join(', ')})` : '';
+
+        // ── 헤더 업데이트
         updateText('user-nickname', `닉네임: ${curNick}${prevText}`);
         updateText('user-ano', `ANO: ${user.userANO || user.ano || ano}`);
-        updateText('user-grade', `등급: ${user.gradeName || user.grade || '---'} ${user.gradeLevel || ''}`);
+        const gradeStr = `등급: ${user.gradeName || user.grade || '---'} ${user.gradeLevel || ''}`;
+        updateText('user-grade', gradeStr);
         updateColor('user-grade', getGradeColor(user.gradeName || user.grade));
         updateText('user-rank', `${user.RTRank || user.rank || '---'}위`);
         updateText('stat-nick', curNick);
         updateText('stat-prev-nicks', unique.join(', ') || '---');
         updateText('stat-ano-val', user.userANO || user.ano || ano);
+
+        // ── PROFILE 섹션
+        updateText('sp-nick', curNick);
+        updateText('sp-ano', `ANO ${user.userANO || user.ano || ano}`);
+        updateText('sp-grade', `${user.gradeName || user.grade || '---'} ${user.gradeLevel || ''}`);
+        updateColor('sp-grade', getGradeColor(user.gradeName || user.grade));
+        updateText('sp-rank', `${user.RTRank || user.rank || '---'}위`);
+
+        // 메모(어검술 킬러 등) 처리
+        const prem = premiumMap[norm];
+        const memo = prem?.account?.memo || "";
+        const memoCont = document.getElementById('sp-memo-container');
+        if (memoCont) {
+            if (memo) {
+                updateHtml('sp-memo', memo); // <br />가 텍스트로 보이지 않게 처리
+                memoCont.style.display = 'block';
+            } else {
+                memoCont.style.display = 'none';
+            }
+        }
+
     } catch (e) { console.error(e); }
 
+    // ── RECORDS 섹션 (Premium 우선 적용)
+    const premEntry = premiumMap[norm];
     try {
-        // [수정] 모든 전적 데이터 추출 시 명시적으로 숫자로 변환하여 문자열 결합 방지
-        const w = Number(findVal(user, ['WinCount', 'winCount', 'win']) || swl.totalWinCount || 0);
-        const l = Number(findVal(user, ['LoseCount', 'loseCount', 'lose']) || swl.totalLoseCount || 0);
-        const p = Number(findVal(user, ['playCount', 'PlayCount']) || swl.playCount || (w + l) || 1);
-        let wrRaw = findVal(user, ['WinRate_InclDisc', 'winRate']) || swl.totalWinRate;
-        let wr = 0;
-        if (wrRaw) wr = String(wrRaw).replace('%', '');
-        else wr = Math.round((w / p) * 100);
-        updateHtml('stat-season-rec', `${p}전 <span style="color:#238636">${w}승</span> <span style="color:#da3633">${l}패</span> (${wr}%)`);
-        updateText('user-season-wr', `${wr}%`);
+        if (premEntry) {
+            // Premium 유저: V82_FINAL_RANK_PREMIUM.json 데이터만 사용 (우측 패널)
+            fillRecordBlock('sp-rk', premEntry.rankingRecord || null);
+            fillRecordBlock('sp-all', premEntry.totalRecord || null);
+
+            // 왼쪽 패널(사이드바) 시즌 전적 요약도 Premium 기준 업데이트
+            const pr = premEntry.rankingRecord || {};
+            const pr_p = Number(pr.winCnt || 0) + Number(pr.loseCnt || 0);
+            updateHtml('stat-season-rec', `${pr_p}전 <span style="color:#238636">${pr.winCnt}승</span> <span style="color:#da3633">${pr.loseCnt}패</span> (${pr.seasonWinningRate}%)`);
+            updateText('user-season-wr', `${pr.seasonWinningRate}%`);
+        } else {
+            // 일반 유저: 기존 데이터 사용
+            const w = Number(findVal(user, ['WinCount', 'winCount', 'win']) || swl.totalWinCount || 0);
+            const l = Number(findVal(user, ['LoseCount', 'loseCount', 'lose']) || swl.totalLoseCount || 0);
+            const p = Number(findVal(user, ['playCount', 'PlayCount']) || swl.playCount || (w + l) || 1);
+            let wrRaw = findVal(user, ['WinRate_InclDisc', 'winRate']) || swl.totalWinRate;
+            let wr = wrRaw ? parseInt(String(wrRaw).replace('%', ''), 10) : Math.round((w / p) * 100);
+            updateHtml('stat-season-rec', `${p}전 <span style="color:#238636">${w}승</span> <span style="color:#da3633">${l}패</span> (${wr}%)`);
+            updateText('user-season-wr', `${wr}%`);
+
+            fillRecordBlock('sp-rk', {
+                winCnt: w, loseCnt: l,
+                seasonWinningRate: wrRaw || wr,
+                thisWeekWinningRate: swl.thisWeekWinningRate || 0,
+                seasonPartyWinningRate: swl.seasonPartyWinningRate || 0,
+                thisWeekPartyWinningRate: swl.thisWeekPartyWinningRate || 0,
+                disconnectCnt: swl.disconnectCnt || 0,
+            });
+            fillRecordBlock('sp-all', allWl);
+        }
+
     } catch (e) { console.error(e); }
 
+    // ── 상세 통계 (왼쪽 패널)
     try {
         const tc = findVal(basic, ['totalContribution']) || findVal(user, ['totalContribute', 'avgContribute']) || 0;
         const cc = findVal(basic, ['combatContribution']) || findVal(user, ['combatContributeAvg']) || 0;
@@ -283,6 +516,7 @@ async function selectUser(ano) {
         const dispell = findVal(basic, ['avgDispell']) || findVal(user, ['dispellCntAvg']) || 0;
         const potion = findVal(basic, ['avgPotion']) || findVal(user, ['potionCntAvg']) || 0;
         const gold = findVal(basic, ['averageGetGold']) || findVal(user, ['totalGoldAvg', 'avgGold']) || 0;
+
         updateText('stat-total-cont', Number(tc).toLocaleString());
         updateText('stat-combat-cont', Number(cc).toLocaleString());
         updateText('stat-combat-rate', `${cr}%`);
@@ -293,29 +527,95 @@ async function selectUser(ano) {
         updateText('stat-avg-gold', Number(gold).toLocaleString());
     } catch (e) { console.error(e); }
 
+    // ── 전체 랭대 전적 (온디맨드 API)
     try {
         updateHtml('stat-total-rec', '<span style="color:#888">확인 중...</span>');
-        updateText('stat-consecutive', "---");
-        const worker = "https://script.google.com/macros/s/AKfycby1H2PVEMbzf_cd80ua8UFhni3ZbITnIcuOpU9yCLNt4QrKh-2GeRsOGvZMqShkgqg5/exec";
+        updateText('stat-consecutive', '---');
+        const worker = 'https://script.google.com/macros/s/AKfycby1H2PVEMbzf_cd80ua8UFhni3ZbITnIcuOpU9yCLNt4QrKh-2GeRsOGvZMqShkgqg5/exec';
         fetch(`${worker}?ano=${norm}`).then(r => r.text()).then(t => {
-            const f = t.indexOf("{"), l = t.lastIndexOf("}");
-            if (f !== -1 && l !== -1) {
-                const j = JSON.parse(t.substring(f, l + 1).replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":').replace(/:\s*'([^']*)'/g, ':"$1"').replace(/,\s*([\]\}])/g, '$1'));
-                // [수정] 실시간 전적 합산 시 확실하게 숫자로 변환하여 문자열 결합 방지
+            const f = t.indexOf('{'), lx = t.lastIndexOf('}');
+            if (f !== -1 && lx !== -1) {
+                const j = JSON.parse(t.substring(f, lx + 1)
+                    .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
+                    .replace(/:\s*'([^']*)'/g, ':"$1"')
+                    .replace(/,\s*([\]\}])/g, '$1'));
                 const tw = Number(j.winLoseTendency?.totalWinCount || 0);
                 const tl = Number(j.winLoseTendency?.totalLoseCount || 0);
                 const tc = Number(j.winLoseTendency?.consecutiveWinLose || 0);
-                const totalGames = tw + tl;
-                updateHtml('stat-total-rec', `${totalGames}전 ${tw}승 ${tl}패 (${Math.round(tw / (totalGames || 1) * 100)}%)`);
-                updateHtml('stat-consecutive', tc > 0 ? `<span style="color:#3FB950">${tc}연승</span>` : (tc < 0 ? `<span style="color:#FF4D4D">${Math.abs(tc)}연패</span>` : "---"));
+                const tGames = tw + tl;
+                updateHtml('stat-total-rec', `${tGames}전 ${tw}승 ${tl}패 (${Math.round(tw / (tGames || 1) * 100)}%)`);
+                updateHtml('stat-consecutive', tc > 0
+                    ? `<span style="color:#3FB950">${tc}연승</span>`
+                    : (tc < 0 ? `<span style="color:#FF4D4D">${Math.abs(tc)}연패</span>` : '---'));
+
+                // 전체 전적 블록도 API 결과로 갱신 (Premium 데이터가 없을 때만)
+                if (!premEntry) {
+                    fillRecordBlock('sp-all', j.winLoseTendency || {});
+                }
             }
         }).catch(() => { updateText('stat-total-rec', '조회 실패'); });
     } catch (e) { }
 
+    // ── HEROES 섹션
     try {
-        const charList = user.characterList || detail.characterList || [];
-        updateHtml('hero-list', `<div style="display:grid; grid-template-columns: repeat(8, 34px); gap:8px;">${charList.slice(0, 16).map(c => `<img src="img_hero/${c.characterNo || c}.png" class="hero-mini-icon" style="width:34px; height:34px;" onerror="this.src='img_hero/nop.png'">`).join('')}</div>`);
-    } catch (e) { console.error("Hero list render failed", e); }
+        // preferHero: premiumMap 우선 (playCnt/winningRate 포함), fallback은 characterList
+        const premEntry = premiumMap[norm];
+        let rawHeroes = [];
+
+        if (premEntry && premEntry.preferHero && premEntry.preferHero.length > 0) {
+            rawHeroes = premEntry.preferHero;
+        } else if (user.characterList && user.characterList.length > 0) {
+            rawHeroes = user.characterList;
+        } else if (detail.characterList && detail.characterList.length > 0) {
+            rawHeroes = detail.characterList;
+        }
+
+        // heroNo → characterNo 정규화
+        const heroObjects = rawHeroes.map(c => {
+            if (typeof c === 'string') return { characterNo: c };
+            const obj = Object.assign({}, c);
+            if (!obj.characterNo && obj.heroNo) obj.characterNo = obj.heroNo;
+            return obj;
+        });
+
+        // 왼쪽 헤더 영웅 미니 아이콘
+        updateHtml('hero-list', `<div style="display:grid; grid-template-columns: repeat(8, 34px); gap:8px;">${heroObjects.slice(0, 16).map(c =>
+            `<img src="img_hero/${c.characterNo || c}.png" class="hero-mini-icon" style="width:34px;height:34px;" onerror="this.src='img_hero/nop.png'">`
+        ).join('')}</div>`);
+
+        // 다른 유저 열었을 때 항상 판수(내림차순) 기준으로 초기화
+        currentHeroSortKey = 'playCnt';
+        currentHeroSortAsc = false;
+
+        // 선호 영웅 테이블 (판수/승률/파티승률)
+        fillHeroTable('sp-hero-list', 'sp-hero-title', heroObjects);
+
+    } catch (e) { console.error('Hero list render failed', e); }
+
+    // Final scroll reset to top (Robust version)
+    if (panel) {
+        panel.scrollTo({ top: 0, behavior: 'instant' });
+        setTimeout(() => { panel.scrollTop = 0; }, 100);
+    }
 }
 
+window.closeProfilePanel = () => {
+    const panel = document.getElementById('sliding-profile');
+    const tContainer = document.getElementById('table-container');
+    const container = document.querySelector('.container');
+    const dbGrid = document.querySelector('.dashboard-grid');
+    if (panel) panel.classList.remove('open');
+    if (tContainer) tContainer.classList.remove('panel-open');
+    if (container) container.classList.remove('panel-open');
+    if (dbGrid) dbGrid.classList.remove('panel-open');
+
+    document.querySelectorAll('#ranking-body tr').forEach(tr => {
+        tr.style.backgroundColor = '';
+        tr.style.outline = '';
+    });
+};
+
+
+
 init();
+
