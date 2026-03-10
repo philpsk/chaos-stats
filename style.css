@@ -140,10 +140,10 @@ th {
 
 #user-rank,
 #user-season-wr {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: #ffa657;
-  line-height: 1;
+  font-size: 1.4rem !important;
+  font-weight: 800 !important;
+  color: #ffa657 !important;
+  line-height: 1 !important;
 }
 
 .hero-tag {
