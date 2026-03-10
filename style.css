@@ -814,6 +814,12 @@ th {
     position: static;
   }
 
+  /* Hide original detailed info card once statistics are moved to the panel */
+  .left-panel .card {
+    display: none !important;
+  }
+
+
   /* Right panel ranking table */
   .right-panel {
     width: 100%;
