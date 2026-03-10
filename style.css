@@ -511,6 +511,40 @@ th {
   right: 0;
 }
 
+/* Statistics Grid inside Panel */
+.sp-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 5px;
+}
+
+.sp-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sp-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.sp-stat-val {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.sp-stats-card {
+  display: flex;
+  flex-direction: column;
+}
+
+
 .panel-content {
   padding: 12px;
   width: 100%;
@@ -922,6 +956,18 @@ th {
     margin-bottom: 12px !important;
   }
 
+  /* Mobile optimized grid */
+  .sliding-profile-panel .sp-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    padding: 10px !important;
+  }
+
+  .sp-stat-val {
+    font-size: 0.85rem !important;
+  }
+
+
   .sliding-profile-panel .sp-card-body {
     padding: 8px !important;
   }
@@ -955,7 +1001,16 @@ th {
     white-space: nowrap !important;
   }
 
-  .stat-value,
+  .sliding-profile-panel .sp-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    padding: 8px !important;
+  }
+
+  .sp-stat-val {
+    font-size: 0.85rem !important;
+  }
+
   .record-val,
   .extra-val {
     font-size: 0.8rem !important;

@@ -559,6 +559,16 @@ async function selectUser(ano, trElement) {
         updateText('stat-avg-dispell', `${dispell}회`);
         updateText('stat-avg-potion', `${potion}회`);
         updateText('stat-avg-gold', Number(gold).toLocaleString());
+
+        // Sync to Profile Panel (Mobile optimized section)
+        updateText('sp-stat-total-cont', Number(tc).toLocaleString());
+        updateText('sp-stat-combat-cont', Number(cc).toLocaleString());
+        updateText('sp-stat-combat-rate', `${cr}%`);
+        updateText('sp-stat-avg-lv', `Lv.${lv}`);
+        updateText('sp-stat-kda', Number(kda).toFixed(2));
+        updateText('sp-stat-avg-dispell', `${dispell}회`);
+        updateText('sp-stat-avg-potion', `${potion}회`);
+        updateText('sp-stat-avg-gold', Number(gold).toLocaleString());
     } catch (e) { console.error(e); }
 
     // ── 전체 랭대 전적 (온디맨드 API)
@@ -579,6 +589,12 @@ async function selectUser(ano, trElement) {
                 const tGames = tw + tl;
                 updateHtml('stat-total-rec', `${tGames}전 ${tw}승 ${tl}패 (${Math.round(tw / (tGames || 1) * 100)}%)`);
                 updateHtml('stat-consecutive', tc > 0
+                    ? `<span style="color:#3FB950">${tc}연승</span>`
+                    : (tc < 0 ? `<span style="color:#FF4D4D">${Math.abs(tc)}연패</span>` : '---'));
+
+                // Sync to Profile Panel
+                updateHtml('sp-stat-total-rec', `${tGames}전 ${tw}승 ${tl}패 (${Math.round(tw / (tGames || 1) * 100)}%)`);
+                updateHtml('sp-stat-consecutive', tc > 0
                     ? `<span style="color:#3FB950">${tc}연승</span>`
                     : (tc < 0 ? `<span style="color:#FF4D4D">${Math.abs(tc)}연패</span>` : '---'));
 
