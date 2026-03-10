@@ -943,32 +943,46 @@ th {
     font-size: 0.75rem !important;
   }
 
-  /* Ranking Table - Compact on Mobile */
+  /* Ranking Table - Ultra Compact on Mobile (sticking columns) */
   .ranking-table thead th {
-    padding: 6px 3px !important;
+    padding: 6px 1px !important;
     font-size: 0.70rem !important;
     white-space: nowrap !important;
   }
 
-  /* Tighten Nickname and Grade columns */
-  .ranking-table td:nth-child(2),
-  .ranking-table th:nth-child(2) {
+  .ranking-table td {
+    padding: 8px 1px !important;
+    font-size: 0.70rem !important;
+  }
+
+  /* Column 1 (Rank) */
+  .ranking-table td:nth-child(1),
+  .ranking-table th:nth-child(1) {
     padding-right: 0px !important;
     width: 1% !important;
-    /* Force content width */
   }
 
+  /* Column 2 (Nickname) */
+  .ranking-table td:nth-child(2),
+  .ranking-table th:nth-child(2) {
+    padding-left: 2px !important;
+    padding-right: 0px !important;
+    width: 1% !important;
+  }
+
+  /* Column 4 (Grade) - Note: 3 is hidden */
   .ranking-table td:nth-child(4),
   .ranking-table th:nth-child(4) {
-    padding-left: 4px !important;
-    /* Minimal gap */
+    padding-left: 2px !important;
+    padding-right: 0px !important;
     width: 1% !important;
-    /* Force content width */
   }
 
-  .ranking-table td {
-    padding: 8px 3px !important;
-    font-size: 0.70rem !important;
+  /* Column 5 (Win/Loss) */
+  .ranking-table td:nth-child(5),
+  .ranking-table th:nth-child(5) {
+    padding-left: 2px !important;
+    width: 1% !important;
   }
 
   /* Table container horizontal scrolling */
