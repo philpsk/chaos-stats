@@ -958,24 +958,28 @@ th {
     overflow-x: auto !important;
   }
 
-  .sp-hero-table th {
-    font-size: 0.7rem !important;
-    padding: 4px 2px !important;
-    white-space: nowrap !important;
-    /* Prevent vertical stacking */
-    line-height: 1.1;
+  .sp-hero-table th,
+  .sp-hero-table td {
+    text-align: center !important;
+    /* Center align to match header and data */
+  }
+
+  /* Keep name column left-aligned */
+  .sp-hero-table td:nth-child(2),
+  .sp-hero-table th:nth-child(2) {
+    text-align: left !important;
   }
 
   .sp-hero-col-play,
   .sp-hero-table th[data-hero-sort="playCnt"] {
-    padding-right: 35px !important;
-    /* Increased from 20px to 35px for better mobile spacing */
+    padding-right: 0px !important;
+    /* Reset padding for center alignment */
   }
 
   .sp-percent-val,
   .sp-hero-table th[data-hero-sort="winningRate"] {
     padding-left: 20px !important;
-    /* Added left padding to create more gap between columns */
+    /* Create gap as requested */
   }
 
   #sp-hero-list td {
