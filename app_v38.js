@@ -689,8 +689,9 @@ window.closeProfilePanel = () => {
 document.addEventListener('mousedown', (e) => {
     const panel = document.getElementById('sliding-profile');
     if (panel && panel.classList.contains('open')) {
-        // 클릭된 요소가 패널 내부가 아니고, 랭킹 행도 아니며, 닫기 버튼도 아닌 경우
-        if (!panel.contains(e.target) && !e.target.closest('#ranking-body tr') && !e.target.closest('.close-panel-btn')) {
+        // 클릭된 요소가 패널 내부가 아니고, 랭킹 행도 아니며, 닫기 버튼도 아니며, 검색창 영역도 아닌 경우
+        if (!panel.contains(e.target) && !e.target.closest('#ranking-body tr') &&
+            !e.target.closest('.close-panel-btn') && !e.target.closest('.search-container-v2')) {
             closeProfilePanel();
         }
     }
