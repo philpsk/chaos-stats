@@ -227,7 +227,7 @@ function renderTable() {
 
         // Show only 7 icons on mobile, 14 on desktop in table
         const isMobile = window.innerWidth <= 900;
-        const iconCount = isMobile ? 7 : 14;
+        const iconCount = 7; // Always 7 icons per row as requested
         const icons = heroes.slice(0, iconCount).map(c => `<img src="img_hero/${c.characterNo || c}.png" class="hero-mini-icon" onerror="this.src='img_hero/nop.png'">`).join('');
         return `<tr onclick="selectUser('${ano}', this)">
             <td>${rank}</td>

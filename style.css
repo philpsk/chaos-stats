@@ -237,13 +237,13 @@ th {
 /* 대시보드 그리드 - 남은 높이를 모두 사용 */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 360px 800px;
+  grid-template-columns: 360px 1fr;
+  max-width: 1400px;
+  margin: 0 auto;
   gap: 12px;
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  justify-content: center;
-  /* 너비가 남을 경우 중앙 정렬 및 스트레칭 방지 */
   align-items: stretch;
 }
 
