@@ -135,6 +135,15 @@ th {
   display: flex;
   gap: 15px;
   white-space: nowrap;
+  align-items: baseline;
+}
+
+#user-rank,
+#user-season-wr {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffa657;
+  line-height: 1;
 }
 
 .hero-tag {
