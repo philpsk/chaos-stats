@@ -216,14 +216,15 @@ th {
 
 }
 
-/* 상단 페이지네이션 고정 (V51) */
+/* 상단 페이지네이션 고정 (V51->V52 헤더 통합) */
+.hero-pagination-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 10px;
+}
+
 #pagination-top {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: var(--bg-color);
-  padding: 10px 0;
-  margin-bottom: 5px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -932,9 +933,17 @@ th {
     margin-bottom: 5px !important;
   }
 
-  /* Row 3: Hero List */
-  .hero-list {
+  /* Row 3: Hero List + Pagination (V52) */
+  .hero-pagination-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 15px;
     margin-top: 5px !important;
+  }
+
+  .hero-list {
+    margin-top: 0 !important;
     justify-content: flex-start !important;
   }
 
