@@ -214,7 +214,23 @@ th {
   pointer-events: none;
 }
 
+}
+
+/* 상단 페이지네이션 고정 (V51) */
+#pagination-top {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-color);
+  padding: 10px 0;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .pg-input-wrapper {
+
   display: flex;
   align-items: center;
   gap: 8px;
