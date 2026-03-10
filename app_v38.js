@@ -541,39 +541,43 @@ async function selectUser(ano, trElement) {
 
     } catch (e) { console.error(e); }
 
-    // ── RECORDS 섹션 (Premium 우선 적용)
+    // ── RECORDS 섹션 (Premium 우선 적용하되 최신 승패는 user 객체 기준)
     const premEntry = premiumMap[norm];
     try {
+        // 공통: 메인 데이터 기준 최신 전적 및 수치 추출
+        const recentW = Number(findVal(user, ['WinCount', 'winCount', 'win']) || swl.totalWinCount || 0);
+        const recentL = Number(findVal(user, ['LoseCount', 'loseCount', 'lose']) || swl.totalLoseCount || 0);
+        const recentP = Number(findVal(user, ['playCount', 'PlayCount']) || swl.playCount || (recentW + recentL) || 1);
+        let recentWrRaw = findVal(user, ['WinRate_InclDisc', 'winRate']) || swl.totalWinRate;
+        let recentWr = recentWrRaw ? parseInt(String(recentWrRaw).replace('%', ''), 10) : Math.round((recentW / recentP) * 100);
+
+        // UI 문자열 공통 포맷 구성
+        const seasonTxt = `${recentP}전 <span class="win-text">${recentW}승</span> <span class="loss-text">${recentL}패</span> (${recentWr}%)`;
+        const rcData = {
+            winCnt: recentW,
+            loseCnt: recentL,
+            seasonWinningRate: recentWrRaw || recentWr
+        };
+
         if (premEntry) {
-            // Premium 유저: V82_FINAL_RANK_PREMIUM.json 데이터만 사용 (우측 패널)
-            fillRecordBlock('sp-rk', premEntry.rankingRecord || null);
+            // Premium 유저라도 승무패 수치는 최신 메인 데이터 덮어쓰기
+            const prData = Object.assign({}, premEntry.rankingRecord, rcData);
+            fillRecordBlock('sp-rk', prData);
             fillRecordBlock('sp-all', premEntry.totalRecord || null);
 
-            // 왼쪽 패널(사이드바) 시즌 전적 요약도 Premium 기준 업데이트
-            const pr = premEntry.rankingRecord || {};
-            const pr_p = Number(pr.winCnt || 0) + Number(pr.loseCnt || 0);
-            const seasonRecHtml = `${pr_p}전 <span class="win-text">${pr.winCnt}승</span> <span class="loss-text">${pr.loseCnt}패</span> (${pr.seasonWinningRate}%)`;
-            updateHtml('stat-season-rec', seasonRecHtml);
-            updateText('user-season-wr', `${pr.seasonWinningRate}%`);
-            // Panel Sync
-            updateHtml('sp-stat-season-rec', seasonRecHtml);
-        } else {
-            // 일반 유저: 기존 데이터 사용
-            const w = Number(findVal(user, ['WinCount', 'winCount', 'win']) || swl.totalWinCount || 0);
-            const l = Number(findVal(user, ['LoseCount', 'loseCount', 'lose']) || swl.totalLoseCount || 0);
-            const p = Number(findVal(user, ['playCount', 'PlayCount']) || swl.playCount || (w + l) || 1);
-            let wrRaw = findVal(user, ['WinRate_InclDisc', 'winRate']) || swl.totalWinRate;
-            let wr = wrRaw ? parseInt(String(wrRaw).replace('%', ''), 10) : Math.round((w / p) * 100);
-
-            const seasonTxt = `${p}전 <span class="win-text">${w}승</span> <span class="loss-text">${l}패</span> (${wr}%)`;
+            // 사이드바 전적 업데이트 사항 동기화 적용
             updateHtml('stat-season-rec', seasonTxt);
-            updateText('user-season-wr', `${wr}%`);
-            // Panel Sync
+            updateText('user-season-wr', `${recentWr}%`);
+            updateHtml('sp-stat-season-rec', seasonTxt);
+        } else {
+            // 일반 유저: 기존 데이터 세팅 + 파티 승률 포함
+            updateHtml('stat-season-rec', seasonTxt);
+            updateText('user-season-wr', `${recentWr}%`);
             updateHtml('sp-stat-season-rec', seasonTxt);
 
             fillRecordBlock('sp-rk', {
-                winCnt: w, loseCnt: l,
-                seasonWinningRate: wrRaw || wr,
+                winCnt: recentW, loseCnt: recentL,
+                seasonWinningRate: recentWrRaw || recentWr,
                 thisWeekWinningRate: swl.thisWeekWinningRate || 0,
                 seasonPartyWinningRate: swl.seasonPartyWinningRate || 0,
                 thisWeekPartyWinningRate: swl.thisWeekPartyWinningRate || 0,
