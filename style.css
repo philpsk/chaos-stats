@@ -540,9 +540,10 @@ th {
 }
 
 .sp-stats-card {
-  display: none;
+  display: none !important;
   /* Hide on desktop by default as per request */
 }
+
 
 
 
