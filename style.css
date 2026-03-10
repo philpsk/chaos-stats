@@ -687,14 +687,14 @@ th {
 .sp-hero-col-play {
   color: #a0a0c0;
   text-align: right !important;
-  padding-right: 66px !important;
-  /* Reduced from 88px to 66px */
+  padding-right: 55px !important;
+  /* Reduced from 66px to 55px for PC */
 }
 
 /* Also target the header for play count */
 .sp-hero-table th[data-hero-sort="playCnt"] {
   text-align: right !important;
-  padding-right: 66px !important;
+  padding-right: 55px !important;
 }
 
 .sp-percent-val {
