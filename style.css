@@ -665,6 +665,8 @@ th {
 .sp-hero-table th:last-child,
 .sp-hero-table td:last-child {
   text-align: center;
+  padding-right: 12px !important;
+  /* Shift left visually */
 }
 
 .sp-hero-col-rank {
