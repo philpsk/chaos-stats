@@ -944,12 +944,11 @@ th {
     margin-bottom: 5px !important;
   }
 
-  /* Row 3: Hero List + Pagination (V52) */
   .hero-pagination-wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    gap: 15px;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: flex-end !important;
+    gap: 15px !important;
     margin-top: 5px !important;
   }
 
