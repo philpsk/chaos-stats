@@ -517,6 +517,8 @@ async function selectUser(ano, trElement) {
             const pr_p = Number(pr.winCnt || 0) + Number(pr.loseCnt || 0);
             updateHtml('stat-season-rec', `${pr_p}전 <span style="color:#238636">${pr.winCnt}승</span> <span style="color:#da3633">${pr.loseCnt}패</span> (${pr.seasonWinningRate}%)`);
             updateText('user-season-wr', `${pr.seasonWinningRate}%`);
+            // Panel Sync
+            updateHtml('sp-stat-season-rec', `${pr_p}전 <span style="color:#238636">${pr.winCnt}승</span> <span style="color:#da3633">${pr.loseCnt}패</span> (${pr.seasonWinningRate}%)`);
         } else {
             // 일반 유저: 기존 데이터 사용
             const w = Number(findVal(user, ['WinCount', 'winCount', 'win']) || swl.totalWinCount || 0);
@@ -524,8 +526,12 @@ async function selectUser(ano, trElement) {
             const p = Number(findVal(user, ['playCount', 'PlayCount']) || swl.playCount || (w + l) || 1);
             let wrRaw = findVal(user, ['WinRate_InclDisc', 'winRate']) || swl.totalWinRate;
             let wr = wrRaw ? parseInt(String(wrRaw).replace('%', ''), 10) : Math.round((w / p) * 100);
-            updateHtml('stat-season-rec', `${p}전 <span style="color:#238636">${w}승</span> <span style="color:#da3633">${l}패</span> (${wr}%)`);
+
+            const seasonTxt = `${p}전 <span style="color:#238636">${w}승</span> <span style="color:#da3633">${l}패</span> (${wr}%)`;
+            updateHtml('stat-season-rec', seasonTxt);
             updateText('user-season-wr', `${wr}%`);
+            // Panel Sync
+            updateHtml('sp-stat-season-rec', seasonTxt);
 
             fillRecordBlock('sp-rk', {
                 winCnt: w, loseCnt: l,
