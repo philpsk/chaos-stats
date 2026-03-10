@@ -113,7 +113,7 @@ async function init() {
                 if (ano) premiumMap[ano] = entry;
             });
         }
-        filteredData = [...allData];
+        currentPage = 1;
         renderTable();
         setupSearchClear();
         document.getElementById('search-input')?.addEventListener('input', handleSearch);
@@ -123,6 +123,17 @@ async function init() {
         document.querySelectorAll('th[data-hero-sort]').forEach(th => {
             th.addEventListener('click', () => sortHeroData(th.dataset.heroSort));
         });
+
+        // Auto-select first user on load
+        if (allData.length > 0) {
+            const first = allData[0];
+            const firstAno = first.userANO || first.ano;
+            // Small delay to ensure table is rendered
+            setTimeout(() => {
+                const firstTr = document.querySelector('#ranking-body tr:first-child');
+                selectUser(firstAno, firstTr);
+            }, 100);
+        }
     } catch (e) { console.error("Init failed", e); }
 }
 
