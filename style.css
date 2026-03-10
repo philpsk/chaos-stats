@@ -662,6 +662,11 @@ th {
   color: #e0e0e0;
 }
 
+.sp-hero-table th:last-child,
+.sp-hero-table td:last-child {
+  text-align: center;
+}
+
 .sp-hero-col-rank {
   color: var(--gold);
   font-family: 'Roboto Mono', monospace;
