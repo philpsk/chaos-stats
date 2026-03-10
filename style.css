@@ -354,7 +354,7 @@ th {
 .ranking-table td {
   padding: 12px 10px;
   border-bottom: 1px solid var(--border-color);
-  font-size: 0.9rem;
+  font-size: 0.8rem !important;
   white-space: nowrap !important;
 }
 
