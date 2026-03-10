@@ -449,6 +449,12 @@ async function selectUser(ano, trElement) {
         panel.scrollTop = 0;
     }
 
+    // 메인 그리드 레이아웃 조정
+    const grid = document.querySelector('.dashboard-grid');
+    if (grid) grid.classList.add('panel-open');
+    const tableCont = document.getElementById('table-container');
+    if (tableCont) tableCont.classList.add('panel-open');
+
     // 행 하이라이트
     document.querySelectorAll('#ranking-body tr').forEach(tr => {
         tr.style.backgroundColor = '';
@@ -634,6 +640,12 @@ async function selectUser(ano, trElement) {
 window.closeProfilePanel = () => {
     const panel = document.getElementById('sliding-profile');
     if (panel) panel.classList.remove('open');
+
+    // 메인 그리드 레이아웃 복원
+    const grid = document.querySelector('.dashboard-grid');
+    if (grid) grid.classList.remove('panel-open');
+    const tableCont = document.getElementById('table-container');
+    if (tableCont) tableCont.classList.remove('panel-open');
 
     document.querySelectorAll('#ranking-body tr').forEach(tr => {
         tr.style.backgroundColor = '';

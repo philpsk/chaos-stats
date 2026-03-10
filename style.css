@@ -470,7 +470,9 @@ th {
 }
 
 .table-container.panel-open .hide-on-panel {
-  display: none !important;
+  /* display: none !important; */
+  /* Do not hide, just allow shrinking */
+  opacity: 0.5;
 }
 
 .table-container.panel-open {
@@ -903,6 +905,12 @@ th {
   .sliding-profile-panel.open {
     transform: translateY(0) !important;
     right: 0 !important;
+  }
+
+  /* When panel is open on mobile, we can keep the ranking table below it or shrink it */
+  .dashboard-grid.panel-open .right-panel {
+    /* display: none; */
+    /* Avoid hiding the whole thing if user wants to scroll */
   }
 
   .sliding-profile {
