@@ -300,7 +300,10 @@ window.goToPage = (p) => {
     if (page > totalPages) page = totalPages;
     currentPage = page;
     renderTable();
+    // Scroll to top of window for mobile users
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     const tContainer = document.getElementById('table-container');
+
     if (tContainer) tContainer.scrollTop = 0;
 };
 

@@ -819,6 +819,18 @@ th {
     display: none !important;
   }
 
+  /* Remove gap between search and top pagination */
+  .search-container-v2 {
+    margin-bottom: 0 !important;
+  }
+
+  #pagination-top {
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+    margin-top: 0 !important;
+  }
+
+
 
   /* Right panel ranking table */
   .right-panel {
