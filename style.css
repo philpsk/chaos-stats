@@ -958,40 +958,49 @@ th {
     overflow-x: auto !important;
   }
 
+  /* Mobile Profile Panel Table Alignment V42 */
   .sp-hero-table th,
   .sp-hero-table td {
     text-align: center !important;
-    /* Center align to match header and data */
+    font-size: 0.75rem !important;
+    padding: 6px 2px !important;
+    white-space: nowrap !important;
+    line-height: 1.2;
   }
 
-  /* Keep name column left-aligned */
-  .sp-hero-table td:nth-child(2),
-  .sp-hero-table th:nth-child(2) {
+  /* Name column remains left-aligned */
+  .sp-hero-table th:nth-child(2),
+  .sp-hero-table td:nth-child(2) {
     text-align: left !important;
+    padding-left: 4px !important;
   }
 
-  .sp-hero-col-play,
-  .sp-hero-table th[data-hero-sort="playCnt"] {
+  /* Column 3 (Play Count) */
+  .sp-hero-table th:nth-child(3),
+  .sp-hero-table td:nth-child(3) {
+    padding-left: 5px !important;
     padding-right: 0px !important;
-    /* Reset padding for center alignment */
   }
 
-  .sp-percent-val,
-  .sp-hero-table th[data-hero-sort="winningRate"] {
+  /* Column 4 (Win Rate) - Gap from Col 3 */
+  .sp-hero-table th:nth-child(4),
+  .sp-hero-table td:nth-child(4) {
     padding-left: 20px !important;
-    /* Create gap as requested */
+    /* Create visual gap */
+    padding-right: 0px !important;
+  }
+
+  /* Column 5 (Party Win Rate) - Align under header text */
+  .sp-hero-table th:nth-child(5),
+  .sp-hero-table td:nth-child(5) {
+    padding-left: 10px !important;
+    padding-right: 0px !important;
+    /* Reset all offset paddings */
   }
 
   #sp-hero-list td {
     padding: 5px 2px !important;
     font-size: 0.75rem !important;
-  }
-
-  /* Party Win Rate - Shift left further to align under "티승" as requested */
-  .sp-hero-table td:nth-child(5),
-  .sp-hero-table th:nth-child(5) {
-    padding-right: 28px !important;
-    /* Increased from 12px to 28px */
   }
 
   /* Ranking Table - Ultra Compact on Mobile (sticking columns) */
