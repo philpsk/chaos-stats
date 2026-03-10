@@ -961,8 +961,15 @@ th {
   .sp-hero-table th {
     font-size: 0.7rem !important;
     padding: 4px 2px !important;
-    white-space: normal !important;
+    white-space: nowrap !important;
+    /* Prevent vertical stacking */
     line-height: 1.1;
+  }
+
+  .sp-hero-col-play,
+  .sp-hero-table th[data-hero-sort="playCnt"] {
+    padding-right: 4px !important;
+    /* Reset large desktop padding */
   }
 
   #sp-hero-list td {
