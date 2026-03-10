@@ -540,9 +540,10 @@ th {
 }
 
 .sp-stats-card {
-  display: flex;
-  flex-direction: column;
+  display: none;
+  /* Hide on desktop by default as per request */
 }
+
 
 
 .panel-content {
@@ -961,6 +962,12 @@ th {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
     padding: 10px !important;
+  }
+
+  .sp-stats-card {
+    display: flex !important;
+    /* Show only on mobile panel */
+    flex-direction: column !important;
   }
 
   .sp-stat-val {
