@@ -677,6 +677,15 @@ th {
 
 .sp-hero-col-play {
   color: #a0a0c0;
+  text-align: right !important;
+  padding-right: 24px !important;
+  /* Shift left visually */
+}
+
+/* Also target the header for play count */
+.sp-hero-table th[data-hero-sort="playCnt"] {
+  text-align: right !important;
+  padding-right: 24px !important;
 }
 
 .sp-percent-val {
