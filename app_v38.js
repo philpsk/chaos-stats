@@ -405,9 +405,8 @@ function fillHeroTable(tbodyId, titleId, heroList) {
         return na.localeCompare(nb);
     });
 
-    // Show only 14 heroes on mobile as requested
-    const isMobile = window.innerWidth <= 900;
-    const displayList = isMobile ? sorted.slice(0, 14) : sorted;
+    // Show all heroes on mobile
+    const displayList = sorted;
 
     tbody.innerHTML = displayList.map((h, i) => {
         const cno = String(h.characterNo || '');

@@ -946,18 +946,29 @@ th {
   /* Ranking Table - Compact on Mobile */
   .ranking-table thead th {
     padding: 6px 3px !important;
-    font-size: 0.7rem !important;
+    font-size: 0.70rem !important;
     white-space: nowrap !important;
   }
 
-  /* Remove excessive left padding on grade column */
-  .ranking-table thead th:nth-child(3) {
-    padding-left: 3px !important;
+  /* Tighten Nickname and Grade columns */
+  .ranking-table td:nth-child(2),
+  .ranking-table th:nth-child(2) {
+    padding-right: 0px !important;
+    width: 1% !important;
+    /* Force content width */
+  }
+
+  .ranking-table td:nth-child(4),
+  .ranking-table th:nth-child(4) {
+    padding-left: 4px !important;
+    /* Minimal gap */
+    width: 1% !important;
+    /* Force content width */
   }
 
   .ranking-table td {
     padding: 8px 3px !important;
-    font-size: 0.7rem !important;
+    font-size: 0.70rem !important;
   }
 
   /* Table container horizontal scrolling */
