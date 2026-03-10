@@ -234,7 +234,11 @@ function renderTable() {
             <td>${nick}</td>
             <td class="hide-on-panel hide-on-mobile"><div class="hero-icons-container">${icons}</div></td>
             <td class="hide-on-panel" style="color:${getGradeColor(grade)}">${grade}</td>
-            <td class="hide-on-panel"><span style="color:#238636">${win}승</span> <span style="color:#da3633">${loss}패</span> <span class="win-rate-pill">${wr}%</span></td>
+            <td class="hide-on-panel">
+                <span class="win-text">${win}승</span> 
+                <span class="loss-text">${loss}패</span> 
+                <span class="win-rate-pill">${wr}%</span>
+            </td>
             <td class="hide-on-mobile" style="color:#58A6FF">${ano}</td>
         </tr>`;
     }).join('');
@@ -353,7 +357,9 @@ function fillRecordBlock(prefix, rec) {
     const elBar = document.getElementById(`${prefix}-bar`);
     const elExtra = document.getElementById(`${prefix}-extra`);
 
-    if (elRec) elRec.textContent = `${w}승 ${l}패 ${d}무`;
+    if (elRec) {
+        elRec.innerHTML = `<span class="win-text">${w}승</span> <span class="loss-text">${l}패</span> <span>${d}무</span>`;
+    }
     if (elSwr) {
         elSwr.textContent = `시즌 ${swr}%`;
         elSwr.style.color = getRateColor(swr);
@@ -525,10 +531,11 @@ async function selectUser(ano, trElement) {
             // 왼쪽 패널(사이드바) 시즌 전적 요약도 Premium 기준 업데이트
             const pr = premEntry.rankingRecord || {};
             const pr_p = Number(pr.winCnt || 0) + Number(pr.loseCnt || 0);
-            updateHtml('stat-season-rec', `${pr_p}전 <span style="color:#238636">${pr.winCnt}승</span> <span style="color:#da3633">${pr.loseCnt}패</span> (${pr.seasonWinningRate}%)`);
+            const seasonRecHtml = `${pr_p}전 <span class="win-text">${pr.winCnt}승</span> <span class="loss-text">${pr.loseCnt}패</span> (${pr.seasonWinningRate}%)`;
+            updateHtml('stat-season-rec', seasonRecHtml);
             updateText('user-season-wr', `${pr.seasonWinningRate}%`);
             // Panel Sync
-            updateHtml('sp-stat-season-rec', `${pr_p}전 <span style="color:#238636">${pr.winCnt}승</span> <span style="color:#da3633">${pr.loseCnt}패</span> (${pr.seasonWinningRate}%)`);
+            updateHtml('sp-stat-season-rec', seasonRecHtml);
         } else {
             // 일반 유저: 기존 데이터 사용
             const w = Number(findVal(user, ['WinCount', 'winCount', 'win']) || swl.totalWinCount || 0);
