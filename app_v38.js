@@ -224,7 +224,11 @@ function renderTable() {
         const rank = u.RTRank || u.rank || "---";
         const detail = userDetails[norm] || {};
         const heroes = u.characterList || detail.characterList || [];
-        const icons = heroes.slice(0, 7).map(c => `<img src="img_hero/${c.characterNo || c}.png" class="hero-mini-icon" onerror="this.src='img_hero/nop.png'">`).join('');
+
+        // Show only 7 icons on mobile, 14 on desktop in table
+        const isMobile = window.innerWidth <= 900;
+        const iconCount = isMobile ? 7 : 14;
+        const icons = heroes.slice(0, iconCount).map(c => `<img src="img_hero/${c.characterNo || c}.png" class="hero-mini-icon" onerror="this.src='img_hero/nop.png'">`).join('');
         return `<tr onclick="selectUser('${ano}', this)">
             <td>${rank}</td>
             <td>${nick}</td>
@@ -245,13 +249,18 @@ function renderPagination() {
         return;
     }
 
-    const maxVisibleButtons = 10;
+    const isMobile = window.innerWidth <= 900;
+    const maxVisibleButtons = isMobile ? 5 : 10;
+
     let startPage = Math.max(1, currentPage - Math.floor(maxVisibleButtons / 2));
     let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
 
     if (endPage - startPage + 1 < maxVisibleButtons) {
         startPage = Math.max(1, endPage - maxVisibleButtons + 1);
     }
+
+    // Ensure 1-indexed rank logic consistency: Page 1 (1-50), Page 2 (51-100)...
+    // goToPage handles index as (currentPage-1)*pageSize to start slicing.
 
     let h = `<div class="pagination-area">`;
 
@@ -396,9 +405,11 @@ function fillHeroTable(tbodyId, titleId, heroList) {
         return na.localeCompare(nb);
     });
 
-    if (title) title.textContent = `선호 영웅 (이번 시즌) (${sorted.length}개)`;
+    // Show only 14 heroes on mobile as requested
+    const isMobile = window.innerWidth <= 900;
+    const displayList = isMobile ? sorted.slice(0, 14) : sorted;
 
-    tbody.innerHTML = sorted.map((h, i) => {
+    tbody.innerHTML = displayList.map((h, i) => {
         const cno = String(h.characterNo || '');
         const name = h.name || h.characterName || HERO_MAP[cno] || `Unknown(${cno})`;
         const pc = Number(h.playCnt || h.playCount || 0);
@@ -593,7 +604,11 @@ async function selectUser(ano, trElement) {
         });
 
         // 왼쪽 헤더 영웅 미니 아이콘
-        updateHtml('hero-list', `<div style="display:grid; grid-template-columns: repeat(8, 34px); gap:8px;">${heroObjects.slice(0, 16).map(c =>
+        const isMobile = window.innerWidth <= 900;
+        const iconSlice = isMobile ? 14 : 16;
+        const gridCols = isMobile ? 7 : 8;
+
+        updateHtml('hero-list', `<div style="display:grid; grid-template-columns: repeat(${gridCols}, 34px); gap:8px;">${heroObjects.slice(0, iconSlice).map(c =>
             `<img src="img_hero/${c.characterNo || c}.png" class="hero-mini-icon" style="width:34px;height:34px;" onerror="this.src='img_hero/nop.png'">`
         ).join('')}</div>`);
 

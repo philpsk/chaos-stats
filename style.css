@@ -48,6 +48,18 @@ header {
   flex-shrink: 0;
 }
 
+td {
+  white-space: nowrap !important;
+}
+
+th {
+  background: var(--card-bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  white-space: nowrap !important;
+}
+
 .profile-card {
   position: relative;
   background: var(--card-bg);
@@ -66,6 +78,7 @@ header {
   font-weight: 700;
   margin-bottom: 2px;
   letter-spacing: -0.5px;
+  white-space: nowrap !important;
 }
 
 .user-meta {
@@ -73,6 +86,12 @@ header {
   gap: 14px;
   font-family: 'Roboto Mono', monospace;
   font-size: 0.9rem;
+  white-space: nowrap !important;
+}
+
+.user-meta>span,
+.user-meta>div {
+  white-space: nowrap !important;
 }
 
 .ano-tag {
@@ -85,6 +104,10 @@ header {
 
 .rank-badge {
   text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
 }
 
 .rank-title {
@@ -291,7 +314,7 @@ header {
 .stat-label {
   color: var(--text-dim);
   font-size: 0.8rem;
-  white-space: nowrap;
+  white-space: nowrap !important;
 }
 
 .stat-value {
@@ -299,6 +322,7 @@ header {
   font-size: 0.9rem;
   font-family: 'Roboto Mono', monospace;
   text-align: right;
+  white-space: nowrap !important;
 }
 
 /* 랭킹 테이블 */
@@ -318,12 +342,14 @@ header {
   /* 다크 배경색으로 고정 */
   z-index: 100 !important;
   border-bottom: 2px solid var(--accent-blue) !important;
+  white-space: nowrap !important;
 }
 
 .ranking-table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  font-size: 0.85rem;
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  white-space: nowrap !important;
 }
 
 .ranking-table tr:hover {
@@ -548,12 +574,14 @@ header {
 .record-label {
   font-size: 0.8rem;
   color: var(--text-dim);
+  white-space: nowrap !important;
 }
 
 .record-val {
   font-size: 0.85rem;
   font-weight: 700;
   color: #fff;
+  white-space: nowrap !important;
 }
 
 .record-swr {
@@ -588,11 +616,13 @@ header {
 .extra-label {
   font-size: 0.8rem;
   color: var(--text-dim);
+  white-space: nowrap !important;
 }
 
 .extra-val {
   font-size: 0.85rem;
   font-weight: 700;
+  white-space: nowrap !important;
 }
 
 /* Heroes Table inside Panel */
@@ -721,24 +751,55 @@ header {
   }
 
   /* Header user info side-by-side */
+  /* Mobile Header Row: Nickname and Rank on the same line */
   .profile-card {
     flex-direction: row !important;
     justify-content: space-between !important;
     align-items: center !important;
-    flex-wrap: nowrap !important;
-    /* Force one line if possible */
     padding: 10px 15px !important;
-    gap: 10px;
+    min-height: 60px !important;
+    gap: 15px !important;
   }
 
-  /* Rank badge position fix for mobile row */
+  .profile-nickname {
+    font-size: 1.1rem !important;
+    margin-bottom: 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
+
   .profile-card>div[style*="position: absolute"] {
     position: static !important;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
     width: auto !important;
-    margin-top: 0 !important;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .rank-badge {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px;
+    margin: 0 !important;
+  }
+
+  .rank-title,
+  .wr-title {
+    display: none !important;
+    /* Hide "시즌 순위", "승률" labels to save space */
+  }
+
+  .rank-val,
+  .wr-val {
+    font-size: 1.6rem !important;
+    /* Larger font size as per screenshot 4 */
+    margin: 0 !important;
+    font-weight: 800 !important;
   }
 
   .profile-nickname {
@@ -768,9 +829,11 @@ header {
     overflow-y: auto !important;
     background: var(--bg-color) !important;
     transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-    padding: 0 15px 20px 15px !important;
-    /* Horizontal padding to prevent clipping */
+    padding: 0 15px 120px 15px !important;
+    /* Further increased padding to prevent any cutoff */
     box-sizing: border-box;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   .sliding-profile.open {
