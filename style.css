@@ -343,6 +343,12 @@ th {
   z-index: 100 !important;
   border-bottom: 2px solid var(--accent-blue) !important;
   white-space: nowrap !important;
+  vertical-align: middle;
+}
+
+.table-container {
+  overflow-x: auto !important;
+  width: 100%;
 }
 
 .ranking-table td {
@@ -770,15 +776,27 @@ th {
     flex: 1;
   }
 
-  .profile-card>div[style*="position: absolute"] {
+  .header-stats {
     position: static !important;
     display: flex !important;
     flex-direction: row !important;
-    align-items: center !important;
+    align-items: baseline !important;
     justify-content: flex-end !important;
     width: auto !important;
     gap: 10px;
     flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  /* Nickname font size and wrap prevention */
+  .profile-card h1 {
+    font-size: 1.1rem !important;
+    margin-bottom: 0 !important;
+    white-space: nowrap !important;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .rank-badge {
@@ -795,11 +813,23 @@ th {
   }
 
   .rank-val,
-  .wr-val {
-    font-size: 1.6rem !important;
-    /* Larger font size as per screenshot 4 */
-    margin: 0 !important;
+  .wr-val,
+  #user-rank,
+  #user-season-wr {
+    font-size: 1.8rem !important;
     font-weight: 800 !important;
+    color: #ffa657 !important;
+    margin: 0 !important;
+  }
+
+  /* Pagination top styling for mobile start of right panel */
+  #pagination-top {
+    justify-content: center !important;
+    padding: 10px 0 !important;
+    background: var(--bg-color);
+    width: 100%;
+    margin-bottom: 5px;
+    border-bottom: 1px solid var(--border-color);
   }
 
   .profile-nickname {

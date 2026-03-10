@@ -22,15 +22,12 @@
             <!-- Heroes injected by JS -->
           </div>
         </div>
-        <!-- 상단 페이지네이션 - 헤더 내부로 이동 (영웅 아이콘 라인) -->
-        <div id="pagination-top"
-          style="display:flex; align-items: center; gap: 10px; margin-top: auto; padding-left: 0; margin-left: -5px;">
-        </div>
-        <div
+        <div class="header-stats"
           style="position: absolute; top: 25px; right: 25px; display: flex; align-items: baseline; gap: 15px; white-space: nowrap;">
           <span id="user-rank" style="font-size: 1.8rem; font-weight: 800; color: #ffa657;">--위</span>
           <span id="user-season-wr" style="font-size: 1.8rem; font-weight: 800; color: #ffa657;">--%</span>
         </div>
+      </div>
     </header>
 
     <main class="dashboard-grid">
@@ -79,6 +76,9 @@
 
       <!-- Main ranking table -->
       <section class="right-panel">
+        <!-- 상단 페이지네이션 위치 변경 -->
+        <div id="pagination-top" style="display:flex; align-items: center; gap: 10px; padding: 10px 0; margin-left: 0;">
+        </div>
 
         <div class="rank-scroll-area">
           <div class="card">

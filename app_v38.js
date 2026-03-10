@@ -605,8 +605,8 @@ async function selectUser(ano, trElement) {
 
         // 왼쪽 헤더 영웅 미니 아이콘
         const isMobile = window.innerWidth <= 900;
-        const iconSlice = isMobile ? 14 : 16;
-        const gridCols = isMobile ? 7 : 8;
+        const iconSlice = isMobile ? 14 : 7;
+        const gridCols = isMobile ? 7 : 7;
 
         updateHtml('hero-list', `<div style="display:grid; grid-template-columns: repeat(${gridCols}, 34px); gap:8px;">${heroObjects.slice(0, iconSlice).map(c =>
             `<img src="img_hero/${c.characterNo || c}.png" class="hero-mini-icon" style="width:34px;height:34px;" onerror="this.src='img_hero/nop.png'">`
