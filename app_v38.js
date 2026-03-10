@@ -305,16 +305,37 @@ window.goToPage = (p) => {
     currentPage = page;
     renderTable();
 
-    // 1. Scroll window to top (Mobile)
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // 2. Scroll right-panel to top (PC Dashboard side)
+    // PC 환경 독립 스크롤 최상단화
     const rPanel = document.querySelector('.right-panel');
     if (rPanel) rPanel.scrollTop = 0;
-
-    // 3. Scroll table-container to top (Inner scroll)
     const tContainer = document.getElementById('table-container');
     if (tContainer) tContainer.scrollTop = 0;
+
+    // 모바일 환경 window 스크롤 최상단화 (오류 방지 및 타겟 지정)
+    try {
+        if (window.innerWidth <= 900) {
+            // .right-panel 또는 .dashboard-grid 의 Y 좌표로 스크롤
+            const targetEl = document.querySelector('.right-panel') || document.querySelector('.dashboard-grid');
+            if (targetEl) {
+                // 문서 최상단부터 타겟 엘리먼트까지의 실제 거리 계산 (약간의 헤더 여백 추가 보정)
+                const yOffset = -10;
+                const rect = targetEl.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const targetY = rect.top + scrollTop + yOffset;
+
+                // 호환성 문제 방지를 위해 부드러운 스크롤 지원 확인 후 분기
+                if (typeof window.scrollTo === 'function') {
+                    window.scrollTo({ top: targetY, behavior: 'smooth' });
+                } else {
+                    window.scrollTo(0, targetY);
+                }
+            } else {
+                window.scrollTo(0, 0); // fallback
+            }
+        }
+    } catch (e) {
+        window.scrollTo(0, 0); // 최후 fallback
+    }
 };
 
 
