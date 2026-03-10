@@ -987,6 +987,12 @@ th {
     font-size: 0.75rem !important;
   }
 
+  /* Party Win Rate - Shift left slightly from center as requested */
+  .sp-hero-table td:nth-child(5),
+  .sp-hero-table th:nth-child(5) {
+    padding-right: 12px !important;
+  }
+
   /* Ranking Table - Ultra Compact on Mobile (sticking columns) */
   .ranking-table thead th {
     padding: 6px 1px !important;
