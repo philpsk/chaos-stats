@@ -372,6 +372,10 @@ function fillHeroTable(tbodyId, titleId, heroList) {
     // 현재 테이블에 렌더링 중인 전체 영웅 리스트 저장 (정렬에 사용)
     currentHeroList = heroList || [];
 
+    if (title) {
+        title.innerText = `선호 영웅 (이번 시즌) (${currentHeroList.length}개)`;
+    }
+
     // 헤더 정렬 텍스트/화살표 업데이트
     document.querySelectorAll('th[data-hero-sort]').forEach(th => {
         const k = th.dataset.heroSort;
