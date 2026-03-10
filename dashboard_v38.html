@@ -26,17 +26,10 @@
         <div id="pagination-top"
           style="display:flex; align-items: center; gap: 10px; margin-top: auto; padding-left: 0; margin-left: -5px;">
         </div>
-        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 12px;">
-          <div class="rank-badge" style="display: flex; align-items: baseline; gap: 25px;">
-            <div style="text-align: right;">
-              <span style="font-size: 0.85rem; color: #8b949e; display: block; margin-bottom: 2px;">시즌 순위</span>
-              <span id="user-rank" style="font-size: 2.4rem; font-weight: 800; color: #ffa657;">--위</span>
-            </div>
-            <div style="text-align: right;">
-              <span style="font-size: 0.85rem; color: #8b949e; display: block; margin-bottom: 2px;">승률</span>
-              <span id="user-season-wr" style="font-size: 2.4rem; font-weight: 800; color: #ffa657;">--%</span>
-            </div>
-          </div>
+        <div
+          style="position: absolute; top: 25px; right: 25px; display: flex; align-items: baseline; gap: 15px; white-space: nowrap;">
+          <span id="user-rank" style="font-size: 1.8rem; font-weight: 800; color: #ffa657;">--위</span>
+          <span id="user-season-wr" style="font-size: 1.8rem; font-weight: 800; color: #ffa657;">--%</span>
         </div>
       </div>
     </header>
@@ -114,11 +107,12 @@
               <!-- 우측 슬라이딩 프로필 패널 -->
               <div id="sliding-profile" class="sliding-profile-panel">
                 <div class="panel-content">
-                  <button class="close-panel-btn" onclick="closeProfilePanel()">✖ 닫기</button>
-
                   <!-- PROFILE CARD -->
                   <div class="sp-card">
-                    <div class="sp-card-title">PROFILE</div>
+                    <div class="sp-card-title">
+                      <span>PROFILE</span>
+                      <button class="close-panel-btn" onclick="closeProfilePanel()">✖ 닫기</button>
+                    </div>
                     <div class="sp-card-body">
                       <div
                         style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 4px;">
@@ -218,7 +212,7 @@
     </main>
   </div>
 
-  <script src="app_v38.js?v=20260310_PREMIUM_V2"></script>
+  <script src="app_v38.js?v=2"></script>
 </body>
 
 </html>

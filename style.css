@@ -34,7 +34,7 @@ body {
 
 /* 전체 페이지를 뷰포트 높이에 맞게 flex column */
 .container {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 8px 16px;
   height: 100vh;
@@ -49,6 +49,7 @@ header {
 }
 
 .profile-card {
+  position: relative;
   background: var(--card-bg);
   backdrop-filter: blur(10px);
   border: 1px solid var(--border-color);
@@ -213,14 +214,14 @@ header {
 /* 대시보드 그리드 - 남은 높이를 모두 사용 */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 360px 1fr;
+  grid-template-columns: 360px 800px;
   gap: 12px;
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  /* Prevent grid overflow */
+  justify-content: center;
+  /* 너비가 남을 경우 중앙 정렬 및 스트레칭 방지 */
   align-items: stretch;
-  /* Make children fill height */
 }
 
 /* 왼쪽 패널: sticky + 내부 스크롤 */
@@ -464,42 +465,38 @@ header {
 }
 
 .panel-content {
-  padding: 15px;
+  padding: 12px;
   width: 100%;
-  /* Flexible width to fit inside scrollbar area */
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 0px;
+  /* 섹션 간 공백 제거 */
 }
 
 .close-panel-btn {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  align-self: flex-end;
-  background: var(--card-bg);
-  /* Match panel background */
-  color: #C9D1D9;
-  border: 1px solid var(--border-color);
-  padding: 5px 12px;
-  border-radius: 4px;
+  background: none;
+  color: var(--text-dim);
+  border: none;
+  padding: 0;
   cursor: pointer;
   font-size: 0.85rem;
   font-weight: bold;
-  transition: all 0.2s;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .close-panel-btn:hover {
-  background: #F85149;
-  color: #FFFFFF;
+  color: #F85149;
 }
 
 /* Python V82 UI Style Cards */
 .sp-card {
   display: flex;
   flex-direction: column;
-  margin-bottom: 15px;
+  margin-bottom: 0px;
+  /* 공백 완전 제거 */
 }
 
 .sp-card-title {
@@ -513,6 +510,9 @@ header {
   padding: 6px 12px;
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .sp-card-body {

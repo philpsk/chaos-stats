@@ -623,6 +623,17 @@ window.closeProfilePanel = () => {
     });
 };
 
+// 패널 외부 클릭 시 닫기 (mousedown이 더 확실함)
+document.addEventListener('mousedown', (e) => {
+    const panel = document.getElementById('sliding-profile');
+    if (panel && panel.classList.contains('open')) {
+        // 클릭된 요소가 패널 내부가 아니고, 랭킹 행도 아니며, 닫기 버튼도 아닌 경우
+        if (!panel.contains(e.target) && !e.target.closest('#ranking-body tr') && !e.target.closest('.close-panel-btn')) {
+            closeProfilePanel();
+        }
+    }
+});
+
 
 
 init();
