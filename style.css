@@ -968,8 +968,8 @@ th {
 
   .sp-hero-col-play,
   .sp-hero-table th[data-hero-sort="playCnt"] {
-    padding-right: 4px !important;
-    /* Reset large desktop padding */
+    padding-right: 20px !important;
+    /* Increased from 4px to 20px for better mobile spacing */
   }
 
   #sp-hero-list td {
