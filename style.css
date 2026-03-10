@@ -839,7 +839,9 @@ th {
   #user-rank,
   #user-season-wr {
     font-size: 1.4rem !important;
-    /* Scaled down slightly from 1.8rem */
+    font-weight: 800 !important;
+    color: #ffa657 !important;
+    line-height: 1 !important;
   }
 
   /* Row 2: ANO and Grade */
