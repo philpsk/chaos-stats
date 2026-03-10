@@ -229,9 +229,9 @@ function renderTable() {
             <td>${rank}</td>
             <td>${nick}</td>
             <td class="hide-on-panel hide-on-mobile"><div class="hero-icons-container">${icons}</div></td>
-            <td class="hide-on-panel hide-on-mobile" style="color:${getGradeColor(grade)}">${grade}</td>
-            <td class="hide-on-panel hide-on-mobile"><span style="color:#238636">${win}승</span> <span style="color:#da3633">${loss}패</span> <span class="win-rate-pill">${wr}%</span></td>
-            <td style="color:#58A6FF">${ano}</td>
+            <td class="hide-on-panel" style="color:${getGradeColor(grade)}">${grade}</td>
+            <td class="hide-on-panel"><span style="color:#238636">${win}승</span> <span style="color:#da3633">${loss}패</span> <span class="win-rate-pill">${wr}%</span></td>
+            <td class="hide-on-mobile" style="color:#58A6FF">${ano}</td>
         </tr>`;
     }).join('');
     renderPagination();

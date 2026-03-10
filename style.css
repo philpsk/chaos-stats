@@ -720,19 +720,34 @@ header {
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Header user info stacking */
+  /* Header user info side-by-side */
   .profile-card {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    /* Force one line if possible */
+    padding: 10px 15px !important;
+    gap: 10px;
   }
 
-  /* Rank badge position fix for stacked header */
+  /* Rank badge position fix for mobile row */
   .profile-card>div[style*="position: absolute"] {
     position: static !important;
     display: flex;
     justify-content: flex-end;
-    width: 100%;
-    margin-top: 15px;
+    align-items: center;
+    width: auto !important;
+    margin-top: 0 !important;
+  }
+
+  .profile-nickname {
+    font-size: 1.1rem !important;
+    /* Slightly smaller for mobile row */
+    margin-bottom: 0 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* Sliding profile -> Bottom Modal Sheet */
@@ -753,10 +768,23 @@ header {
     overflow-y: auto !important;
     background: var(--bg-color) !important;
     transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    padding: 0 15px 20px 15px !important;
+    /* Horizontal padding to prevent clipping */
+    box-sizing: border-box;
   }
 
   .sliding-profile.open {
     transform: translateY(0) !important;
+  }
+
+  /* Prevent clipping in profile records */
+  .record-block {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+
+  .extra-row {
+    padding-left: 5px !important;
   }
 
   /* Hide specific columns on mobile for better fit - HIGH PRIORITY */
