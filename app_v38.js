@@ -544,7 +544,7 @@ async function selectUser(ano, trElement) {
             let wrRaw = findVal(user, ['WinRate_InclDisc', 'winRate']) || swl.totalWinRate;
             let wr = wrRaw ? parseInt(String(wrRaw).replace('%', ''), 10) : Math.round((w / p) * 100);
 
-            const seasonTxt = `${p}전 <span style="color:#238636">${w}승</span> <span style="color:#da3633">${l}패</span> (${wr}%)`;
+            const seasonTxt = `${p}전 <span class="win-text">${w}승</span> <span class="loss-text">${l}패</span> (${wr}%)`;
             updateHtml('stat-season-rec', seasonTxt);
             updateText('user-season-wr', `${wr}%`);
             // Panel Sync
@@ -610,13 +610,13 @@ async function selectUser(ano, trElement) {
                 const tl = Number(j.winLoseTendency?.totalLoseCount || 0);
                 const tc = Number(j.winLoseTendency?.consecutiveWinLose || 0);
                 const tGames = tw + tl;
-                updateHtml('stat-total-rec', `${tGames}전 ${tw}승 ${tl}패 (${Math.round(tw / (tGames || 1) * 100)}%)`);
+                updateHtml('stat-total-rec', `${tGames}전 <span class="win-text">${tw}승</span> <span class="loss-text">${tl}패</span> (${Math.round(tw / (tGames || 1) * 100)}%)`);
                 updateHtml('stat-consecutive', tc > 0
                     ? `<span style="color:#3FB950">${tc}연승</span>`
                     : (tc < 0 ? `<span style="color:#FF4D4D">${Math.abs(tc)}연패</span>` : '---'));
 
                 // Sync to Profile Panel
-                updateHtml('sp-stat-total-rec', `${tGames}전 ${tw}승 ${tl}패 (${Math.round(tw / (tGames || 1) * 100)}%)`);
+                updateHtml('sp-stat-total-rec', `${tGames}전 <span class="win-text">${tw}승</span> <span class="loss-text">${tl}패</span> (${Math.round(tw / (tGames || 1) * 100)}%)`);
                 updateHtml('sp-stat-consecutive', tc > 0
                     ? `<span style="color:#3FB950">${tc}연승</span>`
                     : (tc < 0 ? `<span style="color:#FF4D4D">${Math.abs(tc)}연패</span>` : '---'));
