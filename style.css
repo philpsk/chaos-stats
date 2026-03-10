@@ -968,8 +968,14 @@ th {
 
   .sp-hero-col-play,
   .sp-hero-table th[data-hero-sort="playCnt"] {
-    padding-right: 20px !important;
-    /* Increased from 4px to 20px for better mobile spacing */
+    padding-right: 35px !important;
+    /* Increased from 20px to 35px for better mobile spacing */
+  }
+
+  .sp-percent-val,
+  .sp-hero-table th[data-hero-sort="winningRate"] {
+    padding-left: 20px !important;
+    /* Added left padding to create more gap between columns */
   }
 
   #sp-hero-list td {
