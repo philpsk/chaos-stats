@@ -687,14 +687,14 @@ th {
 .sp-hero-col-play {
   color: #a0a0c0;
   text-align: right !important;
-  padding-right: 88px !important;
-  /* Shifting further left to increase gap with Win Rate */
+  padding-right: 66px !important;
+  /* Reduced from 88px to 66px */
 }
 
 /* Also target the header for play count */
 .sp-hero-table th[data-hero-sort="playCnt"] {
   text-align: right !important;
-  padding-right: 88px !important;
+  padding-right: 66px !important;
 }
 
 .sp-percent-val {
