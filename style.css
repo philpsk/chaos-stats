@@ -12,6 +12,16 @@
   --gold: #D29922;
   --purple: #A371F7;
   --glass: rgba(255, 255, 255, 0.03);
+  --win-color: #238636;
+  --loss-color: #da3633;
+}
+
+.win-text {
+  color: var(--win-color) !important;
+}
+
+.loss-text {
+  color: var(--loss-color) !important;
 }
 
 * {
