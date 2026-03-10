@@ -300,12 +300,19 @@ window.goToPage = (p) => {
     if (page > totalPages) page = totalPages;
     currentPage = page;
     renderTable();
-    // Scroll to top of window for mobile users
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    const tContainer = document.getElementById('table-container');
 
+    // 1. Scroll window to top (Mobile)
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // 2. Scroll right-panel to top (PC Dashboard side)
+    const rPanel = document.querySelector('.right-panel');
+    if (rPanel) rPanel.scrollTop = 0;
+
+    // 3. Scroll table-container to top (Inner scroll)
+    const tContainer = document.getElementById('table-container');
     if (tContainer) tContainer.scrollTop = 0;
 };
+
 
 // ===========================
 // 승률 색상 (Python r_color 과 동일)
