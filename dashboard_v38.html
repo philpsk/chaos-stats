@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>V88 FINAL - [16 확장 완료]</title>
-  <link rel="stylesheet" href="style.css?v=20260310_V16">
+  <link rel="stylesheet" href="style.css?v=20260310_V17">
 </head>
 
 <body>
@@ -13,19 +13,25 @@
     <header>
       <div class="profile-card">
         <div class="user-info">
-          <h1 id="user-nickname">닉네임: ---</h1>
+          <!-- Mobile row 1: Nickname + Rank/WR -->
+          <div class="user-info-top-row">
+            <h1 id="user-nickname">닉네임: ---</h1>
+            <div class="header-stats">
+              <span id="user-rank">--위</span>
+              <span id="user-season-wr">--%</span>
+            </div>
+          </div>
+
+          <!-- Mobile row 2: Meta -->
           <div class="user-meta">
             <span class="ano-tag" id="user-ano">ANO: 02292</span>
             <span class="grade-tag" id="user-grade">등급: ---</span>
           </div>
-          <div class="hero-list" id="hero-list" style="margin-top: 15px; max-width: 600px;">
+
+          <!-- Mobile row 3: Heroes -->
+          <div class="hero-list" id="hero-list">
             <!-- Heroes injected by JS -->
           </div>
-        </div>
-        <div class="header-stats"
-          style="position: absolute; top: 25px; right: 25px; display: flex; align-items: baseline; gap: 15px; white-space: nowrap;">
-          <span id="user-rank" style="font-size: 1.8rem; font-weight: 800; color: #ffa657;">--위</span>
-          <span id="user-season-wr" style="font-size: 1.8rem; font-weight: 800; color: #ffa657;">--%</span>
         </div>
       </div>
     </header>
@@ -212,7 +218,7 @@
     </main>
   </div>
 
-  <script src="app_v38.js?v=20260310_V16"></script>
+  <script src="app_v38.js?v=20260310_V17"></script>
 </body>
 
 </html>

@@ -124,13 +124,17 @@ th {
   text-shadow: 0 0 16px rgba(255, 140, 0, 0.3);
 }
 
-/* 히어로 목록 */
-.hero-list {
+/* Desktop Header structure adjustment */
+.user-info-top-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0;
-  margin-top: 4px;
-  line-height: 1.6;
+  align-items: baseline;
+  gap: 20px;
+}
+
+.header-stats {
+  display: flex;
+  gap: 15px;
+  white-space: nowrap;
 }
 
 .hero-tag {
@@ -750,46 +754,53 @@ th {
     /* Give it some height for mobile */
   }
 
-  /* Table container horizontal scrolling */
-  .table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+  /* Global Scale Adjustment for Mobile as requested (0.8x feel) */
+  :root {
+    --mobile-font-scale: 0.85;
   }
 
-  /* Header user info side-by-side */
-  /* Mobile Header Row: Nickname and Rank on the same line */
+  body {
+    font-size: calc(1rem * var(--mobile-font-scale)) !important;
+  }
+
+  .container {
+    padding: 10px !important;
+  }
+
+  /* Header user info optimization */
   .profile-card {
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 15px !important;
-    min-height: auto !important;
-    gap: 10px !important;
-    overflow: visible !important;
+    flex-direction: column !important;
+    /* Stack rows vertically */
+    align-items: stretch !important;
+    padding: 12px !important;
+    gap: 8px !important;
   }
 
-  .user-info {
+  /* Row 1: Nickname and Rank/WR */
+  .profile-card>.user-info {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  /* We need a better way to align Nickname and Stats in one row. 
+     Let's adjust the structure conceptually or use Flexbox magic. */
+  .user-info-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    width: 100%;
+    margin-bottom: 5px;
+  }
+
+  .profile-card h1 {
+    font-size: 1.2rem !important;
+    margin: 0 !important;
     flex: 1;
     min-width: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  .profile-nickname,
-  .user-info h1 {
-    font-size: 1.1rem !important;
-    margin: 0 !important;
-    padding: 0 !important;
     white-space: nowrap !important;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-
-  .user-meta {
-    font-size: 0.75rem !important;
-    gap: 8px !important;
-    margin-top: 2px !important;
   }
 
   .header-stats {
@@ -797,64 +808,80 @@ th {
     display: flex !important;
     flex-direction: row !important;
     align-items: baseline !important;
-    justify-content: flex-end !important;
-    width: auto !important;
-    gap: 10px;
-    flex-shrink: 0;
-    margin-left: auto;
+    gap: 8px !important;
+    margin-left: 10px !important;
+    flex-shrink: 0 !important;
   }
 
-  /* Nickname font size and wrap prevention */
-  .profile-card h1 {
-    font-size: 1.1rem !important;
-    margin-bottom: 0 !important;
-    white-space: nowrap !important;
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .rank-badge {
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 8px;
-    margin: 0 !important;
-  }
-
-  .rank-title,
-  .wr-title {
-    display: none !important;
-    /* Hide "시즌 순위", "승률" labels to save space */
-  }
-
-  .rank-val,
-  .wr-val,
   #user-rank,
   #user-season-wr {
-    font-size: 1.8rem !important;
-    font-weight: 800 !important;
-    color: #ffa657 !important;
-    margin: 0 !important;
+    font-size: 1.4rem !important;
+    /* Scaled down slightly from 1.8rem */
   }
 
-  /* Pagination top styling for mobile start of right panel */
-  #pagination-top {
-    justify-content: center !important;
-    padding: 10px 0 !important;
-    background: var(--bg-color);
-    width: 100%;
-    margin-bottom: 5px;
-    border-bottom: 1px solid var(--border-color);
+  /* Row 2: ANO and Grade */
+  .user-meta {
+    font-size: 0.8rem !important;
+    gap: 10px !important;
+    margin-bottom: 5px !important;
   }
 
-  .profile-nickname {
-    font-size: 1.1rem !important;
-    /* Slightly smaller for mobile row */
-    margin-bottom: 0 !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  /* Row 3: Hero List */
+  .hero-list {
+    margin-top: 5px !important;
+    justify-content: flex-start !important;
+  }
+
+  .hero-mini-icon {
+    width: 30px !important;
+    /* Scaled down from 34px */
+    height: 30px !important;
+  }
+
+  /* Profile Panel (Sliding Panel) Optimization */
+  .sliding-profile {
+    padding: 15px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .sliding-profile .card {
+    padding: 12px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .stat-row,
+  .extra-row,
+  .record-row {
+    padding: 4px 0 !important;
+  }
+
+  .stat-label,
+  .record-label,
+  .extra-label {
+    font-size: 0.75rem !important;
+  }
+
+  .stat-value,
+  .record-val,
+  .extra-val {
+    font-size: 0.85rem !important;
+  }
+
+  /* Table within Profile Panel */
+  .sp-hero-table-container {
+    overflow-x: auto !important;
+  }
+
+  #sp-hero-list td,
+  #sp-hero-list th {
+    padding: 6px 4px !important;
+    font-size: 0.75rem !important;
+  }
+
+  /* Table container horizontal scrolling */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Sliding profile -> Bottom Modal Sheet */
