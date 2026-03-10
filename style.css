@@ -218,18 +218,27 @@ th {
 
 /* 상단 페이지네이션 고정 (V51->V52 헤더 통합) */
 .hero-pagination-wrapper {
-  display: flex;
-  align-items: center;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
   gap: 15px;
   margin-top: 5px;
+  width: 100%;
+}
+
+.hero-list {
+  display: inline-flex !important;
+  flex-shrink: 0;
 }
 
 #pagination-top {
-  display: flex;
+  display: inline-flex !important;
   align-items: center;
   gap: 10px;
   margin: 0;
   padding: 0;
+  flex-shrink: 0;
 }
 
 .pg-input-wrapper {
