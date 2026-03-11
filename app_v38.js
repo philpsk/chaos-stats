@@ -231,15 +231,23 @@ function renderTable() {
         const icons = heroes.slice(0, iconCount).map(c => `<img src="img_hero/${c.characterNo || c}.png" class="hero-mini-icon" onerror="this.src='img_hero/nop.png'">`).join('');
         return `<tr onclick="selectUser('${ano}', this)">
             <td>${rank}</td>
-            <td>${nick}</td>
+            <td style="text-align:center; overflow:hidden; text-overflow:ellipsis;">${nick}</td>
             <td class="hide-on-panel hide-on-mobile"><div class="hero-icons-container">${icons}</div></td>
-            <td class="hide-on-panel" style="color:${getGradeColor(grade)}">${grade}</td>
+            <td class="hide-on-panel" style="color:${getGradeColor(grade)}; text-align:center;">${grade}</td>
             <td class="hide-on-panel">
-                <span class="win-text">${win}승</span> 
-                <span class="loss-text">${loss}패</span> 
-                <span class="win-rate-pill">${wr}%</span>
+                <div class="record-cell" style="justify-content: center;">
+                  <div class="wl-bar-container" style="width: 120px;">
+                    <div class="wl-bar-win" style="width: ${wr}%">
+                      ${win}<span class="wl-label">W</span>
+                    </div>
+                    <div class="wl-bar-loss">
+                      ${loss}<span class="wl-label">L</span>
+                    </div>
+                  </div>
+                </div>
             </td>
-            <td class="hide-on-mobile" style="color:#58A6FF">${ano}</td>
+            <td class="hide-on-panel" style="text-align:center;">${wr}%</td>
+            <td class="hide-on-mobile" style="color:#58A6FF; text-align:center;">${ano}</td>
         </tr>`;
     }).join('');
     renderPagination();
