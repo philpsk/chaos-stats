@@ -539,6 +539,7 @@ th {
   gap: 4px;
   justify-content: center;
   align-items: center;
+  min-height: 30px;
 }
 
 .hero-mini-icon {
