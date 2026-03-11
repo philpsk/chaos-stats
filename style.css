@@ -844,14 +844,14 @@ th {
 .sp-hero-col-play {
   color: #a0a0c0;
   text-align: right !important;
-  padding-right: 55px !important;
-  /* Reduced from 66px to 55px for PC */
+  padding-right: 20px !important;
+  /* Reduced from 55px to 20px for PC - V100 */
 }
 
 /* Also target the header for play count */
 .sp-hero-table th[data-hero-sort="playCnt"] {
   text-align: right !important;
-  padding-right: 55px !important;
+  padding-right: 20px !important;
 }
 
 .sp-percent-val {
@@ -1244,15 +1244,15 @@ th {
   /* Ranking Table - Ultra Compact on Mobile (sticking columns) */
   .ranking-table thead th {
     padding: 6px 1px !important;
-    font-size: 0.65rem !important;
-    /* Slightly smaller */
+    font-size: 0.72rem !important;
+    /* Increased from 0.65rem (1.1x) - V101 */
     white-space: nowrap !important;
   }
 
   .ranking-table td {
     padding: 8px 1px !important;
-    font-size: 0.65rem !important;
-    /* Slightly smaller */
+    font-size: 0.72rem !important;
+    /* Increased from 0.65rem (1.1x) - V101 */
   }
 
   /* Column 1 (Rank) */
@@ -1294,7 +1294,8 @@ th {
     /* Significantly reduced from 120px/150px */
     height: 18px !important;
     line-height: 18px !important;
-    font-size: 0.65rem !important;
+    font-size: 0.72rem !important;
+    /* Increased from 0.65rem (1.1x) - V101 */
   }
 
   .wl-bar-win,
