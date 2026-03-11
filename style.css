@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+KR:wght@400;700&family=Roboto+Mono:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+KR:wght@400;700&family=Roboto+Mono:wght@500;700&display=swap');
 
 :root {
   --bg-color: #0D1117;
@@ -1161,146 +1161,155 @@ th {
     font-size: 0.8rem !important;
   }
 
-  /* Detailed info panel specific bolding */
+  /* Global bolding for ANO and Grade tags */
+  .ano-tag,
+  .grade-tag,
+  .user-meta span,
+  #user-ano,
+  #user-grade,
   #sp-ano,
   #sp-grade,
   #stat-ano-val {
-    font-weight: 800 !important;
+    font-weight: 700 !important;
   }
 
   /* Table Rank column specific gold bold */
   .sp-hero-col-rank {
-    ble-container {
-      overflow-x: auto !important;
-    }
-
-    /* Table within Profile Panel */
-    .sp-hero-table-container {
-      overflow-x: auto !important;
-    }
-
-    /* Mobile Profile Panel Table Alignment V42 */
-    .sp-hero-table th,
-    .sp-hero-table td {
-      text-align: center !important;
-      font-size: 0.75rem !important;
-      padding: 6px 2px !important;
-      white-space: nowrap !important;
-      line-height: 1.2;
-    }
-
-    /* Name column remains left-aligned */
-    .sp-hero-table th:nth-child(2),
-    .sp-hero-table td:nth-child(2) {
-      text-align: left !important;
-      padding-left: 4px !important;
-    }
-
-    /* Column 3 (Play Count) - Uniform width for symmetry */
-    .sp-hero-table th:nth-child(3),
-    .sp-hero-table td:nth-child(3) {
-      width: 65px !important;
-      padding: 6px 0 !important;
-      text-align: center !important;
-    }
-
-    /* Column 4 (Win Rate) - Uniform width for symmetry */
-    .sp-hero-table th:nth-child(4),
-    .sp-hero-table td:nth-child(4) {
-      width: 65px !important;
-      padding: 6px 0 !important;
-      text-align: center !important;
-    }
-
-    /* Column 5 (Party Win Rate) - Uniform width for symmetry */
-    .sp-hero-table th:nth-child(5),
-    .sp-hero-table td:nth-child(5) {
-      width: 65px !important;
-      padding: 6px 0 !important;
-      text-align: center !important;
-    }
-
-    #sp-hero-list td {
-      padding: 5px 2px !important;
-      font-size: 0.75rem !important;
-    }
-
-    /* Ranking Table - Ultra Compact on Mobile (sticking columns) */
-    .ranking-table thead th {
-      padding: 6px 1px !important;
-      font-size: 0.65rem !important;
-      /* Slightly smaller */
-      white-space: nowrap !important;
-    }
-
-    .ranking-table td {
-      padding: 8px 1px !important;
-      font-size: 0.65rem !important;
-      /* Slightly smaller */
-    }
-
-    /* Column 1 (Rank) */
-    .ranking-table td:nth-child(1),
-    .ranking-table th:nth-child(1) {
-      padding-right: 0px !important;
-      width: 35px !important;
-      /* Fixed width */
-    }
-
-    /* Column 2 (Nickname) */
-    .ranking-table td:nth-child(2),
-    .ranking-table th:nth-child(2) {
-      padding-left: 2px !important;
-      padding-right: 2px !important;
-      max-width: 80px !important;
-      /* Prevent expansion */
-    }
-
-    /* Column 4 (Grade) - Note: 3 is hidden */
-    .ranking-table td:nth-child(4),
-    .ranking-table th:nth-child(4) {
-      padding-left: 2px !important;
-      padding-right: 2px !important;
-      width: 50px !important;
-      /* Tighten for abbreviated names */
-    }
-
-    /* Column 5 (Win/Loss) */
-    .ranking-table td:nth-child(5),
-    .ranking-table th:nth-child(5) {
-      padding-left: 2px !important;
-      width: 90px !important;
-      /* Match reduced bar width */
-    }
-
-    .wl-bar-container {
-      width: 85px !important;
-      /* Significantly reduced from 120px/150px */
-      height: 18px !important;
-      line-height: 18px !important;
-      font-size: 0.65rem !important;
-    }
-
-    .wl-bar-win,
-    .wl-bar-loss {
-      padding: 0 2px !important;
-    }
-
-    /* Column 6 (WinRate %) */
-    .ranking-table td:nth-child(6),
-    .ranking-table th:nth-child(6) {
-      width: 45px !important;
-    }
-
-    /* Table container horizontal scrolling - prevent it if possible */
-    .table-container {
-      overflow-x: hidden !important;
-      /* Try to hide scroll */
-      -webkit-overflow-scrolling: touch !important;
-    }
-
-    /* Hide specific columns on mobile for better fit - HIGH PRIORITY */
-    .hide-on-mobile {
-      display: none !important;
-    }
+    color: var(--gold) !important;
+    font-weight: bold !important;
   }
+
+  .table-container {
+    overflow-x: auto !important;
+  }
+
+  /* Table within Profile Panel */
+  .sp-hero-table-container {
+    overflow-x: auto !important;
+  }
+
+  /* Mobile Profile Panel Table Alignment V42 */
+  .sp-hero-table th,
+  .sp-hero-table td {
+    text-align: center !important;
+    font-size: 0.75rem !important;
+    padding: 6px 2px !important;
+    white-space: nowrap !important;
+    line-height: 1.2;
+  }
+
+  /* Name column remains left-aligned */
+  .sp-hero-table th:nth-child(2),
+  .sp-hero-table td:nth-child(2) {
+    text-align: left !important;
+    padding-left: 4px !important;
+  }
+
+  /* Column 3 (Play Count) - Uniform width for symmetry */
+  .sp-hero-table th:nth-child(3),
+  .sp-hero-table td:nth-child(3) {
+    width: 65px !important;
+    padding: 6px 0 !important;
+    text-align: center !important;
+  }
+
+  /* Column 4 (Win Rate) - Uniform width for symmetry */
+  .sp-hero-table th:nth-child(4),
+  .sp-hero-table td:nth-child(4) {
+    width: 65px !important;
+    padding: 6px 0 !important;
+    text-align: center !important;
+  }
+
+  /* Column 5 (Party Win Rate) - Uniform width for symmetry */
+  .sp-hero-table th:nth-child(5),
+  .sp-hero-table td:nth-child(5) {
+    width: 65px !important;
+    padding: 6px 0 !important;
+    text-align: center !important;
+  }
+
+  #sp-hero-list td {
+    padding: 5px 2px !important;
+    font-size: 0.75rem !important;
+  }
+
+  /* Ranking Table - Ultra Compact on Mobile (sticking columns) */
+  .ranking-table thead th {
+    padding: 6px 1px !important;
+    font-size: 0.65rem !important;
+    /* Slightly smaller */
+    white-space: nowrap !important;
+  }
+
+  .ranking-table td {
+    padding: 8px 1px !important;
+    font-size: 0.65rem !important;
+    /* Slightly smaller */
+  }
+
+  /* Column 1 (Rank) */
+  .ranking-table td:nth-child(1),
+  .ranking-table th:nth-child(1) {
+    padding-right: 0px !important;
+    width: 35px !important;
+    /* Fixed width */
+  }
+
+  /* Column 2 (Nickname) */
+  .ranking-table td:nth-child(2),
+  .ranking-table th:nth-child(2) {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+    max-width: 80px !important;
+    /* Prevent expansion */
+  }
+
+  /* Column 4 (Grade) - Note: 3 is hidden */
+  .ranking-table td:nth-child(4),
+  .ranking-table th:nth-child(4) {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+    width: 50px !important;
+    /* Tighten for abbreviated names */
+  }
+
+  /* Column 5 (Win/Loss) */
+  .ranking-table td:nth-child(5),
+  .ranking-table th:nth-child(5) {
+    padding-left: 2px !important;
+    width: 90px !important;
+    /* Match reduced bar width */
+  }
+
+  .wl-bar-container {
+    width: 85px !important;
+    /* Significantly reduced from 120px/150px */
+    height: 18px !important;
+    line-height: 18px !important;
+    font-size: 0.65rem !important;
+  }
+
+  .wl-bar-win,
+  .wl-bar-loss {
+    padding: 0 2px !important;
+  }
+
+  /* Column 6 (WinRate %) */
+  .ranking-table td:nth-child(6),
+  .ranking-table th:nth-child(6) {
+    width: 45px !important;
+  }
+
+  /* Table container horizontal scrolling - prevent it if possible */
+  .table-container {
+    overflow-x: hidden !important;
+    /* Try to hide scroll */
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Hide specific columns on mobile for better fit - HIGH PRIORITY */
+  .hide-on-mobile {
+    display: none !important;
+  }
+}
