@@ -844,16 +844,16 @@ th {
   width: 65px !important;
 }
 
-/* Desktop Column 3 (Play Count) shifted left for visual balance (V117) */
+/* Desktop Column 3 (Play Count) shifted left for visual balance (V118) */
 .sp-hero-table th:nth-child(3),
 .sp-hero-table td:nth-child(3),
 .sp-hero-table th[data-hero-sort="playCnt"] {
   text-align: center !important;
-  padding-right: 40px !important;
-  /* 승률 컬럼과의 거리를 2배로 넓히기 위해 우측 패딩 부여 */
+  padding-right: 25px !important;
+  /* 사용자 피드백: 25px로 미세 조정 */
   padding-left: 0 !important;
-  width: 105px !important;
-  /* 원래 65px + 패딩 40px */
+  width: 90px !important;
+  /* 65px + 25px */
 }
 
 .sp-hero-col-rank {
