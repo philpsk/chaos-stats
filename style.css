@@ -1252,14 +1252,16 @@ th {
     padding-left: 4px !important;
   }
 
-  /* Column 3 (Play Count) - Header and Data perfectly aligned (V113) */
+  /* Column 3 (Play Count) - Unified and Center Aligned (V115) */
   .sp-hero-table th:nth-child(3),
   .sp-hero-table td:nth-child(3),
   .sp-hero-table th[data-hero-sort="playCnt"] {
-    width: 80px !important;
-    padding: 6px 30px 6px 0 !important;
-    /* 판수 헤더와 데이터 모두 동일 위치로 우측 정렬 */
-    text-align: right !important;
+    width: 70px !important;
+    /* 승률 컬럼과 비슷한 너비 할당 */
+    padding: 6px 0 !important;
+    /* 여백을 0으로 만들어 중앙 정렬이 완벽하게 되도록 유도 */
+    text-align: center !important;
+    /* 사용자 요청: 중앙 정렬 */
   }
 
   /* Column 4 (Win Rate) - Uniform width for symmetry */
