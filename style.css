@@ -844,16 +844,16 @@ th {
   width: 65px !important;
 }
 
-/* Desktop Column 3 (Play Count) shifted left for visual balance (V122) */
+/* Desktop Column 3 (Play Count) shifted left for visual balance (V123) */
 .sp-hero-table th:nth-child(3),
 .sp-hero-table td:nth-child(3),
 .sp-hero-table th[data-hero-sort="playCnt"] {
   text-align: center !important;
-  padding-right: 10px !important;
-  /* 사용자 피드백: 10px로 미세 조정 */
+  padding-right: 8px !important;
+  /* 사용자 피드백: 8px로 미세 조정 */
   padding-left: 0 !important;
-  width: 75px !important;
-  /* 65px + 10px */
+  width: 73px !important;
+  /* 65px + 8px */
 }
 
 .sp-hero-col-rank {
