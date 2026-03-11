@@ -311,30 +311,20 @@ window.goToPage = (p) => {
     const tContainer = document.getElementById('table-container');
     if (tContainer) tContainer.scrollTop = 0;
 
-    // 모바일 환경 window 스크롤 최상단화 (오류 방지 및 타겟 지정)
+    // 모바일/공통: window + document 전체 최상단으로 강제 스크롤
     try {
-        if (window.innerWidth <= 900) {
-            // .right-panel 또는 .dashboard-grid 의 Y 좌표로 스크롤
-            const targetEl = document.querySelector('.right-panel') || document.querySelector('.dashboard-grid');
-            if (targetEl) {
-                // 문서 최상단부터 타겟 엘리먼트까지의 실제 거리 계산 (약간의 헤더 여백 추가 보정)
-                const yOffset = -10;
-                const rect = targetEl.getBoundingClientRect();
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const targetY = rect.top + scrollTop + yOffset;
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
 
-                // 호환성 문제 방지를 위해 부드러운 스크롤 지원 확인 후 분기
-                if (typeof window.scrollTo === 'function') {
-                    window.scrollTo({ top: targetY, behavior: 'smooth' });
-                } else {
-                    window.scrollTo(0, targetY);
-                }
-            } else {
-                window.scrollTo(0, 0); // fallback
-            }
-        }
+        // iOS Safari 등 비동기 렌더링 대응: 약간의 딜레이 후 한 번 더
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+        }, 80);
     } catch (e) {
-        window.scrollTo(0, 0); // 최후 fallback
+        window.scrollTo(0, 0);
     }
 };
 
