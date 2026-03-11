@@ -1188,20 +1188,18 @@ th {
     padding-right: 0px !important;
   }
 
-  /* Column 4 (Win Rate) - Gap from Col 3 */
+  /* Column 4 (Win Rate) - Align under header text */
   .sp-hero-table th:nth-child(4),
   .sp-hero-table td:nth-child(4) {
-    padding-left: 20px !important;
-    /* Create visual gap */
-    padding-right: 0px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
 
   /* Column 5 (Party Win Rate) - Align under header text */
   .sp-hero-table th:nth-child(5),
   .sp-hero-table td:nth-child(5) {
-    padding-left: 10px !important;
-    padding-right: 0px !important;
-    /* Reset all offset paddings */
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
 
   #sp-hero-list td {
