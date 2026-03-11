@@ -677,8 +677,8 @@ async function selectUser(ano, trElement) {
             }
         };
 
-        // 초기 호출: 최대 재시도 3회
-        fetchTotalRecords(norm, 3);
+        // 초기 호출: 최대 재시도 5회
+        fetchTotalRecords(norm, 5);
     } catch (e) { }
 
     // ── HEROES 섹션
