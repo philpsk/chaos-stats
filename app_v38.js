@@ -621,10 +621,19 @@ async function selectUser(ano, trElement) {
 
     // ── 전체 랭대 전적 (온디맨드 API)
     try {
+        window.currentFetchAno = norm; // 현재 클릭된 유저 식별자 저장 (Race Condition 방지)
+
+        // 로딩 상태를 즉시 UI에 반영 (메인 및 프로필 패널 둘 다)
         updateHtml('stat-total-rec', '<span style="color:#888">확인 중...</span>');
         updateText('stat-consecutive', '---');
+        updateHtml('sp-stat-total-rec', '<span style="color:#888">확인 중...</span>');
+        updateText('sp-stat-consecutive', '---');
+
         const worker = 'https://script.google.com/macros/s/AKfycby1H2PVEMbzf_cd80ua8UFhni3ZbITnIcuOpU9yCLNt4QrKh-2GeRsOGvZMqShkgqg5/exec';
         fetch(`${worker}?ano=${norm}`).then(r => r.text()).then(t => {
+            // 응답이 왔을 때, 이미 다른 유저를 클릭했다면 이탈 (Stale Fetch 무시)
+            if (window.currentFetchAno !== norm) return;
+
             const f = t.indexOf('{'), lx = t.lastIndexOf('}');
             if (f !== -1 && lx !== -1) {
                 const j = JSON.parse(t.substring(f, lx + 1)
