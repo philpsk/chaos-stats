@@ -943,10 +943,18 @@ th {
     margin-bottom: 0 !important;
   }
 
+  #pagination,
   #pagination-top {
+    justify-content: center !important;
     padding-top: 5px !important;
     padding-bottom: 5px !important;
     margin-top: 0 !important;
+    width: 100% !important;
+    gap: 5px !important;
+  }
+
+  .pg-input-wrapper {
+    display: none !important;
   }
 
 
