@@ -100,7 +100,8 @@ async function init() {
         const [r1, r2, r3] = await Promise.all([
             fetch(`V88_FINAL_RANK_DEEP.json?${cb}`),
             fetch(`DB.json?${cb}`).catch(() => ({ ok: false })),
-            fetch(`V82_FINAL_RANK_PREMIUM.json?${cb}`).catch(() => ({ ok: false }))
+            fetch(`V82_FINAL_RANK_PREMIUM.json?${cb}`).catch(() => ({ ok: false })),
+            fetch(`last_update.json?${cb}`).catch(() => ({ ok: false }))
         ]);
         if (r1.ok) allData = await r1.json();
         if (r2.ok) userDetails = await r2.json();
@@ -112,6 +113,10 @@ async function init() {
                 const ano = normalizeAno(acc.ano || acc.userANO || '');
                 if (ano) premiumMap[ano] = entry;
             });
+        }
+        if (r4 && r4.ok) {
+            const updateInfo = await r4.json();
+            updateText('last-update-time', updateInfo.last_update || '---');
         }
         filteredData = [...allData];
         renderTable();
