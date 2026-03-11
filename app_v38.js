@@ -227,13 +227,22 @@ function renderTable() {
 
         // Show only 7 icons on mobile, 14 on desktop in table
         const isMobile = window.innerWidth <= 900;
+
+        let displayGrade = grade;
+        if (isMobile && grade !== "---") {
+            displayGrade = grade.replace('다이아몬드', '다이아')
+                .replace('사파이어', '사파')
+                .replace('에메랄드', '에메')
+                .replace('자수정', '자수');
+        }
+
         const iconCount = 7; // Always 7 icons per row as requested
         const icons = heroes.slice(0, iconCount).map(c => `<img src="img_hero/${c.characterNo || c}.png" class="hero-mini-icon" onerror="this.src='img_hero/nop.png'">`).join('');
         return `<tr onclick="selectUser('${ano}', this)">
             <td>${rank}</td>
             <td style="text-align:center; overflow:hidden; text-overflow:ellipsis;">${nick}</td>
             <td class="hide-on-panel hide-on-mobile"><div class="hero-icons-container">${icons}</div></td>
-            <td class="hide-on-panel" style="color:${getGradeColor(grade)}; text-align:center;">${grade}</td>
+            <td class="hide-on-panel" style="color:${getGradeColor(grade)}; text-align:center;">${displayGrade}</td>
             <td class="hide-on-panel">
                 <div class="record-cell" style="justify-content: center;">
                   <div class="wl-bar-container" style="width: 120px;">
