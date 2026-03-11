@@ -1082,7 +1082,8 @@ th {
     overflow-x: hidden !important;
     background: var(--bg-color) !important;
     transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
-    padding: 10px 14px 120px 14px !important;
+    padding: 10px 14px 30px 14px !important;
+    /* Reduced from 120px to 30px to remove empty space - V102 */
     box-sizing: border-box !important;
     display: flex !important;
     flex-direction: column !important;
