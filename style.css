@@ -104,12 +104,19 @@ th {
   white-space: nowrap !important;
 }
 
-.ano-tag {
+.ano-tag,
+#user-ano,
+#sp-ano,
+#stat-ano-val {
   color: var(--accent-blue);
+  font-weight: 800 !important;
 }
 
-.grade-tag {
+.grade-tag,
+#user-grade,
+#sp-grade {
   color: var(--gold);
+  font-weight: 800 !important;
 }
 
 .rank-badge {
@@ -1161,23 +1168,13 @@ th {
     font-size: 0.8rem !important;
   }
 
-  /* Global bolding for ANO and Grade tags */
-  .ano-tag,
-  .grade-tag,
-  .user-meta span,
-  #user-ano,
-  #user-grade,
-  #sp-ano,
-  #sp-grade,
-  #stat-ano-val {
-    font-weight: 700 !important;
-  }
-
   /* Table Rank column specific gold bold */
   .sp-hero-col-rank {
     color: var(--gold) !important;
     font-weight: bold !important;
   }
+
+
 
   .table-container {
     overflow-x: auto !important;
