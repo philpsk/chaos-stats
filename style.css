@@ -1252,13 +1252,11 @@ th {
     padding-left: 4px !important;
   }
 
-  /* Column 3 (Play Count) - Adjusted to align closer to Win Rate (V105, V106) */
+  /* Column 3 (Play Count) - Adjusted to shift more to the left (V107) */
   .sp-hero-table th:nth-child(3),
   .sp-hero-table td:nth-child(3) {
-    width: 55px !important;
-    /* 폭을 약간 늘려 왼쪽 공간 확보 */
-    padding: 6px 15px 6px 0 !important;
-    /* 우측 여백을 주어 승률과의 간격을 띄움 */
+    width: 60px !important;
+    padding: 6px 32px 6px 0 !important;
     text-align: right !important;
   }
 
