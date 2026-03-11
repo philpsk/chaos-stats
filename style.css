@@ -1109,7 +1109,8 @@ th {
     width: 100% !important;
     padding: 10px !important;
     /* Reduced vertical padding (approx 3/4) - V104 */
-    margin-top: 15px !important;
+    margin-top: 0px !important;
+    /* Removed top margin to close the gap - V106 */
     width: calc(100% + 28px) !important;
     /* Offset panel padding (14px * 2) */
     margin-left: -14px !important;
@@ -1144,6 +1145,12 @@ th {
   .sliding-profile-panel .sp-card {
     margin-bottom: 12px !important;
   }
+
+  /* 마지막 카드의 마진을 제거하여 닫기 버튼과 완벽히 밀착 (V106) */
+  .sliding-profile-panel .sp-card:last-of-type {
+    margin-bottom: 0 !important;
+  }
+
 
   /* Mobile optimized grid */
   .sliding-profile-panel .sp-stats-grid {
@@ -1245,12 +1252,14 @@ th {
     padding-left: 4px !important;
   }
 
-  /* Column 3 (Play Count) - Adjusted to match user screenshot */
+  /* Column 3 (Play Count) - Adjusted to align closer to Win Rate (V105, V106) */
   .sp-hero-table th:nth-child(3),
   .sp-hero-table td:nth-child(3) {
-    width: 65px !important;
-    padding: 6px 0 6px 26px !important;
-    text-align: left !important;
+    width: 55px !important;
+    /* 폭을 약간 늘려 왼쪽 공간 확보 */
+    padding: 6px 15px 6px 0 !important;
+    /* 우측 여백을 주어 승률과의 간격을 띄움 */
+    text-align: right !important;
   }
 
   /* Column 4 (Win Rate) - Uniform width for symmetry */
