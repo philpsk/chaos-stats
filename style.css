@@ -833,9 +833,7 @@ th {
   color: #e0e0e0;
 }
 
-/* Desktop Columns 3,4,5 Unified Spacing & Center Alignment (V116) */
-.sp-hero-table th:nth-child(3),
-.sp-hero-table td:nth-child(3),
+/* Desktop Columns 4,5 (Win Rate, Party Win Rate) (V116) */
 .sp-hero-table th:nth-child(4),
 .sp-hero-table td:nth-child(4),
 .sp-hero-table th:nth-child(5),
@@ -844,7 +842,18 @@ th {
   padding-right: 0 !important;
   padding-left: 0 !important;
   width: 65px !important;
-  /* 승률, 판수 컬럼 모두 65px로 통일하여 간격 균일화 */
+}
+
+/* Desktop Column 3 (Play Count) shifted left for visual balance (V117) */
+.sp-hero-table th:nth-child(3),
+.sp-hero-table td:nth-child(3),
+.sp-hero-table th[data-hero-sort="playCnt"] {
+  text-align: center !important;
+  padding-right: 40px !important;
+  /* 승률 컬럼과의 거리를 2배로 넓히기 위해 우측 패딩 부여 */
+  padding-left: 0 !important;
+  width: 105px !important;
+  /* 원래 65px + 패딩 40px */
 }
 
 .sp-hero-col-rank {
