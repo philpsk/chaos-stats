@@ -833,11 +833,18 @@ th {
   color: #e0e0e0;
 }
 
-.sp-hero-table th:last-child,
-.sp-hero-table td:last-child {
-  text-align: center;
-  padding-right: 12px !important;
-  /* Shift left visually */
+/* Desktop Columns 3,4,5 Unified Spacing & Center Alignment (V116) */
+.sp-hero-table th:nth-child(3),
+.sp-hero-table td:nth-child(3),
+.sp-hero-table th:nth-child(4),
+.sp-hero-table td:nth-child(4),
+.sp-hero-table th:nth-child(5),
+.sp-hero-table td:nth-child(5) {
+  text-align: center !important;
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+  width: 65px !important;
+  /* 승률, 판수 컬럼 모두 65px로 통일하여 간격 균일화 */
 }
 
 .sp-hero-col-rank {
@@ -848,15 +855,6 @@ th {
 
 .sp-hero-col-play {
   color: #a0a0c0;
-  text-align: right !important;
-  padding-right: 20px !important;
-  /* Reduced from 55px to 20px for PC - V100 */
-}
-
-/* Also target the header for play count */
-.sp-hero-table th[data-hero-sort="playCnt"] {
-  text-align: right !important;
-  padding-right: 20px !important;
 }
 
 .sp-percent-val {
