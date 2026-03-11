@@ -1041,19 +1041,21 @@ th {
     font-size: 0.8rem !important;
     gap: 10px !important;
     margin-bottom: 5px !important;
+    justify-content: center !important;
   }
 
   .hero-pagination-wrapper {
     display: flex !important;
     flex-wrap: wrap !important;
-    align-items: flex-end !important;
+    align-items: center !important;
+    justify-content: center !important;
     gap: 15px !important;
     margin-top: 5px !important;
   }
 
   .hero-list {
     margin-top: 0 !important;
-    justify-content: flex-start !important;
+    justify-content: center !important;
   }
 
   .hero-mini-icon {
