@@ -1260,9 +1260,9 @@ th {
   }
 
   .sp-hero-table td:nth-child(3) {
-    width: 85px !important;
-    padding: 6px 50px 6px 0 !important;
-    /* 사용자 피드백: 여백 대폭 증가 (V110) */
+    width: 115px !important;
+    padding: 6px 80px 6px 0 !important;
+    /* 사용자 피드백: 여백 80px로 대폭 증가 (V111) */
     text-align: right !important;
   }
 
