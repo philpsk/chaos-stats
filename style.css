@@ -1252,17 +1252,19 @@ th {
     padding-left: 4px !important;
   }
 
-  /* Column 3 (Play Count) - Header and Data separated (V109) */
+  /* Column 3 (Play Count) - Header and Data separated (V112) */
   .sp-hero-table th:nth-child(3) {
-    width: 65px !important;
-    padding: 6px 10px 6px 0 !important;
+    width: 115px !important;
+    /* td와 동일 너비 적용하여 컬럼 박스 일치화 */
+    padding: 6px 15px 6px 0 !important;
+    /* 헤더 텍스트는 원래 위치(우측) 고정 */
     text-align: right !important;
   }
 
   .sp-hero-table td:nth-child(3) {
     width: 115px !important;
     padding: 6px 80px 6px 0 !important;
-    /* 사용자 피드백: 여백 80px로 대폭 증가 (V111) */
+    /* 데이터(xx판)만 좌측으로 대폭 이동 */
     text-align: right !important;
   }
 
