@@ -558,7 +558,7 @@ async function selectUser(ano, trElement) {
 
     try {
         const curNick = user.nick || user.nickname || 'Unknown';
-        const nHistory = (detail.nickHistory || []).map(n => String(n).trim()).filter(n => n && n !== 'Unknown');
+        const nHistory = (detail.nickHistory || []).map(n => String(n).trim()).filter(n => n && n !== 'Unknown' && n !== curNick);
         const prevText = nHistory.length > 0 ? ` (전: ${nHistory.join(', ')})` : '';
 
         // ── 헤더 업데이트

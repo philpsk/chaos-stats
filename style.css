@@ -231,8 +231,6 @@ th {
   pointer-events: none;
 }
 
-}
-
 /* 상단 페이지네이션 고정 (V51->V52 헤더 통합) */
 .hero-pagination-wrapper {
   display: flex !important;
@@ -314,12 +312,13 @@ th {
 
 /* 오른쪽 패널: 내부 스크롤만 */
 .right-panel {
-  height: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   /* 패널 전체 스크롤 */
   padding-right: 4px;
+  min-height: 0;
 }
 
 .right-panel::-webkit-scrollbar {
@@ -583,6 +582,7 @@ th {
 .dashboard-grid.panel-open {
   grid-template-columns: 360px 1fr;
   gap: 12px;
+  align-items: stretch;
 }
 
 .dashboard-grid.panel-open .left-panel {
@@ -982,6 +982,8 @@ th {
 
   .rank-scroll-area {
     min-height: 500px;
+    display: flex;
+    flex-direction: column;
     /* Give it some height for mobile */
   }
 
@@ -1140,12 +1142,6 @@ th {
 
   .mobile-close-btn:active {
     background: rgba(255, 255, 255, 0.2) !important;
-  }
-
-  /* When panel is open on mobile */
-  .dashboard-grid.panel-open .right-panel {
-    /* display: none; */
-    /* Avoid hiding the whole thing if user wants to scroll */
   }
 
   .sliding-profile {
