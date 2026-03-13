@@ -137,16 +137,21 @@ function getUserHeroes(ano, userObj, detailObj) {
     const prem = premiumMap[norm];
     let raw = [];
 
+    // 1순위: V82_FINAL_RANK_PREMIUM.json (premiumMap) 데이터
     if (prem && prem.preferHero && prem.preferHero.length > 0) {
         raw = prem.preferHero;
     } else {
-        const list = userObj?.characterList || detailObj?.characterList || [];
-        // 실제 플레이 기록이 있는 것들만 필터링 (아이콘 중복/시스템기본값 방지)
+        // 2순위: DB.json (detailObj) 또는 메인 데이터의 영웅 리스트
+        const list = detailObj?.characterList || userObj?.characterList || 
+                     detailObj?.recordCharacter || userObj?.recordCharacter || [];
+        
+        // 실제 플레이 기록이 있는 것들만 필터링
         raw = list.filter(h => {
             const pc = Number(h.playCnt || h.playCount || 0);
             const exist = h.bExistRecord === "1" || h.bExistRank === "1";
             return pc > 0 || exist;
         });
+        
         // 플레이 횟수순 정렬
         raw.sort((a, b) => Number(b.playCnt || b.playCount || 0) - Number(a.playCnt || a.playCount || 0));
     }
@@ -154,7 +159,10 @@ function getUserHeroes(ano, userObj, detailObj) {
     return raw.map(c => {
         if (typeof c === 'string') return { characterNo: c };
         const obj = Object.assign({}, c);
-        if (!obj.characterNo && obj.heroNo) obj.characterNo = obj.heroNo;
+        // 필드명 별칭 처리 (characterNo, heroNo, heroID 등 프리미엄/일반 데이터 혼용 대응)
+        if (!obj.characterNo) {
+            obj.characterNo = obj.heroNo || obj.heroID || obj.characterNo;
+        }
         return obj;
     });
 }
@@ -497,13 +505,15 @@ function fillHeroTable(tbodyId, titleId, heroList) {
         const cno = String(h.characterNo || '');
         const name = h.name || h.characterName || HERO_MAP[cno] || `Unknown(${cno})`;
         const pc = Number(h.playCnt || h.playCount || 0);
+        const pcDisplay = pc > 0 ? `${pc}판` : "-";
+        
         let wr = parseInt(String(h.winningRate || h.winRate || 0).replace('%', ''), 10) || 0;
         let pwr = parseInt(String(h.partyWinningRate || h.partyWinRate || 0).replace('%', ''), 10) || 0;
 
         return `<tr>
             <td class="sp-hero-col-rank">${i + 1}</td>
             <td>${name}</td>
-            <td class="sp-hero-col-play">${pc}판</td>
+            <td class="sp-hero-col-play">${pcDisplay}</td>
             <td class="sp-percent-val" style="color:${getRateColor(wr)}">${wr}%</td>
             <td class="sp-percent-val" style="color:${getRateColor(pwr)}">${pwr}%</td>
         </tr>`;
