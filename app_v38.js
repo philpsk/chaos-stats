@@ -601,14 +601,14 @@ async function selectUser(ano, trElement) {
 
     // ── 상세 통계 (왼쪽 패널)
     try {
-        const tc = findVal(detail, ['totalContribution', 'totalContribute', 'avgContribute']) || findVal(basic, ['totalContribution']) || findVal(user, ['totalContribute']) || 0;
-        const cc = findVal(detail, ['combatContributionAvg', 'combatContribution']) || findVal(basic, ['combatContribution']) || findVal(user, ['combatContributeAvg']) || 0;
-        const cr = findVal(detail, ['combatRateAvg', 'battleJoinRate', 'combatRate']) || findVal(basic, ['battleJoinRate']) || findVal(user, ['combatRateAvg']) || 0;
-        const lv = findVal(detail, ['lastLevelAvg', 'averageCharacterLevel', 'avgLevel']) || findVal(basic, ['averageCharacterLevel']) || findVal(user, ['lastLevelAvg']) || 0;
-        const kda = findVal(detail, ['killDieAssistRate', 'kda']) || findVal(user, ['killDieAssistRate']) || 0;
-        const dispell = findVal(detail, ['dispellCntAvg', 'avgDispell']) || findVal(basic, ['avgDispell']) || findVal(user, ['dispellCntAvg']) || 0;
-        const potion = findVal(detail, ['potionCntAvg', 'avgPotion']) || findVal(basic, ['avgPotion']) || findVal(user, ['potionCntAvg']) || 0;
-        const gold = findVal(detail, ['totalGoldAvg', 'averageGetGold', 'avgGold']) || findVal(basic, ['averageGetGold']) || findVal(user, ['totalGoldAvg']) || 0;
+        const tc = findVal(user, ['totalContribute', 'totalContribution', 'avgContribute']) || findVal(detail, ['totalContribute']) || 0;
+        const cc = findVal(user, ['combatContributeAvg', 'combatContributionAvg', 'combatContribute']) || findVal(detail, ['combatContributeAvg']) || 0;
+        const cr = findVal(user, ['combatRateAvg', 'battleJoinRate', 'combatRate']) || findVal(detail, ['combatRateAvg']) || 0;
+        const lv = findVal(user, ['lastLevelAvg', 'averageCharacterLevel', 'avgLevel']) || findVal(detail, ['lastLevelAvg']) || 0;
+        const kda = findVal(user, ['killDieAssistRate', 'kda', 'killDieAssistAvg']) || findVal(detail, ['killDieAssistRate']) || 0;
+        const dispell = findVal(user, ['dispellCntAvg', 'avgDispell', 'dispellAvg']) || findVal(detail, ['dispellCntAvg']) || 0;
+        const potion = findVal(user, ['potionCntAvg', 'avgPotion', 'potionAvg']) || findVal(detail, ['potionCntAvg']) || 0;
+        const gold = findVal(user, ['totalGoldAvg', 'averageGetGold', 'avgGold']) || findVal(detail, ['totalGoldAvg']) || 0;
 
         updateText('stat-total-cont', Number(tc).toLocaleString());
         updateText('stat-combat-cont', Number(cc).toLocaleString());
