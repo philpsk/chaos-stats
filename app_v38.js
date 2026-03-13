@@ -96,12 +96,11 @@ function findVal(obj, keys) {
 
 async function init() {
     try {
-        const cb = `cb=${Date.now()}`;
         const [r1, r2, r3, r4] = await Promise.all([
-            fetch(`V88_FINAL_RANK_DEEP.json?${cb}`),
-            fetch(`DB.json?${cb}`).catch(() => ({ ok: false })),
-            fetch(`V82_FINAL_RANK_PREMIUM.json?${cb}`).catch(() => ({ ok: false })),
-            fetch(`last_update.json?${cb}`).catch(() => ({ ok: false }))
+            fetch(`V88_FINAL_RANK_DEEP.json?v=${Date.now()}`),
+            fetch(`DB.json?v=${Date.now()}`).catch(() => ({ ok: false })),
+            fetch(`V82_FINAL_RANK_PREMIUM.json?v=${Date.now()}`).catch(() => ({ ok: false })),
+            fetch(`last_update.json?v=${Date.now()}`).catch(() => ({ ok: false }))
         ]);
         if (r1.ok) allData = await r1.json();
         if (r2.ok) userDetails = await r2.json();
