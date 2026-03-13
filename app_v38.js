@@ -744,7 +744,7 @@ async function selectUser(ano, trElement) {
         const iconSlice = isMobile ? 14 : 7;
         const gridCols = isMobile ? 7 : 7;
 
-        updateHtml('hero-list', `<div style="display:inline-grid; grid-template-columns: repeat(${gridCols}, 34px); gap:8px;">${heroObjects.slice(0, iconSlice).map(c =>
+        updateHtml('hero-list', `<div style="display:inline-grid; grid-template-columns: repeat(${gridCols}, 34px); gap:8px;">${heroes.slice(0, iconSlice).map(c =>
             `<img src="img_hero/${c.characterNo || c}.png" class="hero-mini-icon" style="width:34px;height:34px;" onerror="this.src='img_hero/nop.png'">`
         ).join('')}</div>`);
 
@@ -753,7 +753,7 @@ async function selectUser(ano, trElement) {
         currentHeroSortAsc = false;
 
         // 선호 영웅 테이블 (판수/승률/파티승률)
-        fillHeroTable('sp-hero-list', 'sp-hero-title', heroObjects);
+        fillHeroTable('sp-hero-list', 'sp-hero-title', heroes);
 
     } catch (e) { console.error('Hero list render failed', e); }
 
