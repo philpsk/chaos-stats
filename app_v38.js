@@ -131,6 +131,34 @@ async function init() {
     } catch (e) { console.error("Init failed", e); }
 }
 
+// 유효 영웅 리스트 추출 (Premium > PlayRecord > Fallback)
+function getUserHeroes(ano, userObj, detailObj) {
+    const norm = normalizeAno(ano);
+    const prem = premiumMap[norm];
+    let raw = [];
+
+    if (prem && prem.preferHero && prem.preferHero.length > 0) {
+        raw = prem.preferHero;
+    } else {
+        const list = userObj?.characterList || detailObj?.characterList || [];
+        // 실제 플레이 기록이 있는 것들만 필터링 (아이콘 중복/시스템기본값 방지)
+        raw = list.filter(h => {
+            const pc = Number(h.playCnt || h.playCount || 0);
+            const exist = h.bExistRecord === "1" || h.bExistRank === "1";
+            return pc > 0 || exist;
+        });
+        // 플레이 횟수순 정렬
+        raw.sort((a, b) => Number(b.playCnt || b.playCount || 0) - Number(a.playCnt || a.playCount || 0));
+    }
+
+    return raw.map(c => {
+        if (typeof c === 'string') return { characterNo: c };
+        const obj = Object.assign({}, c);
+        if (!obj.characterNo && obj.heroNo) obj.characterNo = obj.heroNo;
+        return obj;
+    });
+}
+
 function handleSearch() {
     const input = document.getElementById('search-input');
     const v = input?.value.toLowerCase() || "";
@@ -228,7 +256,7 @@ function renderTable() {
         else wr = (win + loss) > 0 ? ((win / (win + loss)) * 100).toFixed(1) : 0;
         const rank = u.RTRank || u.rank || "---";
         const detail = userDetails[norm] || {};
-        const heroes = u.characterList || detail.characterList || [];
+        const heroes = getUserHeroes(ano, u, detail);
 
         // Show only 7 icons on mobile, 14 on desktop in table
         const isMobile = window.innerWidth <= 900;
@@ -242,7 +270,11 @@ function renderTable() {
         }
 
         const iconCount = 7; // Always 7 icons per row as requested
-        const icons = heroes.slice(0, iconCount).map(c => `<img src="img_hero/${c.characterNo || c}.png" class="hero-mini-icon" onerror="this.src='img_hero/nop.png'">`).join('');
+        const icons = heroes.slice(0, iconCount).map(c => {
+            const cno = c.characterNo || c;
+            const src = (cno && cno !== '[object Object]') ? `img_hero/${cno}.png` : 'img_hero/nop.png';
+            return `<img src="${src}" class="hero-mini-icon" onerror="this.src='img_hero/nop.png'">`;
+        }).join('');
         return `<tr onclick="selectUser('${ano}', this)">
             <td>${rank}</td>
             <td style="text-align:center; overflow:hidden; text-overflow:ellipsis;">${nick}</td>
@@ -704,25 +736,8 @@ async function selectUser(ano, trElement) {
 
     // ── HEROES 섹션
     try {
-        // preferHero: premiumMap 우선 (playCnt/winningRate 포함), fallback은 characterList
-        const premEntry = premiumMap[norm];
-        let rawHeroes = [];
-
-        if (premEntry && premEntry.preferHero && premEntry.preferHero.length > 0) {
-            rawHeroes = premEntry.preferHero;
-        } else if (user.characterList && user.characterList.length > 0) {
-            rawHeroes = user.characterList;
-        } else if (detail.characterList && detail.characterList.length > 0) {
-            rawHeroes = detail.characterList;
-        }
-
-        // heroNo → characterNo 정규화
-        const heroObjects = rawHeroes.map(c => {
-            if (typeof c === 'string') return { characterNo: c };
-            const obj = Object.assign({}, c);
-            if (!obj.characterNo && obj.heroNo) obj.characterNo = obj.heroNo;
-            return obj;
-        });
+        const heroes = getUserHeroes(norm, user, detail);
+        currentHeroList = heroes;
 
         // 왼쪽 헤더 영웅 미니 아이콘
         const isMobile = window.innerWidth <= 900;
