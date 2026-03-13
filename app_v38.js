@@ -633,8 +633,8 @@ async function selectUser(ano, trElement) {
 
     // ── 상세 통계 (왼쪽 패널)
     try {
-        const tc = findVal(user, ['totalContribute', 'totalContribution', 'avgContribute']) || findVal(detail, ['totalContribute']) || 0;
-        const cc = findVal(user, ['combatContributeAvg', 'combatContributionAvg', 'combatContribute']) || findVal(detail, ['combatContributeAvg']) || 0;
+        const tc = [findVal(user, ['totalContribute']), findVal(detail, ['totalContribute']), findVal(user, ['totalContribution'])].find(v => v && v !== "0" && v !== 0) || 0;
+        const cc = [findVal(user, ['combatContributeAvg']), findVal(detail, ['combatContributeAvg']), findVal(user, ['combatContributionAvg'])].find(v => v && v !== "0" && v !== 0) || 0;
         const cr = findVal(user, ['combatRateAvg', 'battleJoinRate', 'combatRate']) || findVal(detail, ['combatRateAvg']) || 0;
         const lv = findVal(user, ['lastLevelAvg', 'averageCharacterLevel', 'avgLevel']) || findVal(detail, ['lastLevelAvg']) || 0;
         const kda = findVal(user, ['killDieAssistRate', 'kda', 'killDieAssistAvg']) || findVal(detail, ['killDieAssistRate']) || 0;
