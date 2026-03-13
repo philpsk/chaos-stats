@@ -527,7 +527,7 @@ async function selectUser(ano, trElement) {
         updateColor('user-grade', getGradeColor(user.gradeName || user.grade));
         updateText('user-rank', `${user.RTRank || user.rank || '---'}위`);
         updateText('stat-nick', curNick);
-        updateText('stat-prev-nicks', unique.join(', ') || '---');
+        updateText('stat-prev-nicks', nHistory.join(', ') || '---');
         updateText('stat-ano-val', user.userANO || user.ano || ano);
 
         // ── PROFILE 섹션
