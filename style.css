@@ -643,7 +643,7 @@ th {
 /* Statistics Grid inside Panel */
 .sp-stats-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1.15fr 0.85fr; /* 좌측 공간 확장 */
   grid-auto-flow: column; /* 세로로 먼저 채움 */
   grid-template-rows: repeat(6, auto); /* 6행 고정 (좌 6개, 우 6개) */
   gap: 12px;
