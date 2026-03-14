@@ -664,11 +664,16 @@ th {
   color: var(--text-dim);
 }
 
-.sp-stat-val {
   font-size: 0.9rem; /* 모바일 대응: 소폭 축소 */
-  white-space: nowrap; /* 텍스트 줄바꿈 방지 (패 글자 고정) */
   font-weight: 500;
   color: #fff;
+}
+
+.sp-win-rate {
+  display: block;
+  font-size: 0.8rem;
+  color: #8b949e;
+  margin-top: 2px;
 }
 
 .sp-stats-card {
