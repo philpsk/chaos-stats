@@ -604,7 +604,8 @@ async function selectUser(ano, trElement) {
         let recentWr = recentWrRaw ? parseInt(String(recentWrRaw).replace('%', ''), 10) : Math.round((recentW / recentP) * 100);
 
         // UI 문자열 공통 포맷 구성
-        const seasonTxt = `<span style="white-space:nowrap !important">${recentP}전 <span class="win-text">${recentW}승</span> <span class="loss-text">${recentL}패</span></span><br><div class="sp-win-rate" style="display:inline-block">(${recentWr}%)</div>`;
+        const seasonTxt = `${recentP}전 <span class="win-text">${recentW}승</span> <span class="loss-text">${recentL}패</span> (${recentWr}%)`;
+        const spSeasonTxt = `<span style="white-space:nowrap !important">${recentP}전 <span class="win-text">${recentW}승</span> <span class="loss-text">${recentL}패</span></span><br><div class="sp-win-rate" style="display:inline-block">(${recentWr}%)</div>`;
         const rcData = {
             winCnt: recentW,
             loseCnt: recentL,
@@ -620,12 +621,12 @@ async function selectUser(ano, trElement) {
             // 사이드바 전적 업데이트 사항 동기화 적용
             updateHtml('stat-season-rec', seasonTxt);
             updateText('user-season-wr', `${recentWr}%`);
-            updateHtml('sp-stat-season-rec', seasonTxt);
+            updateHtml('sp-stat-season-rec', spSeasonTxt);
         } else {
             // 일반 유저: 기존 데이터 세팅 + 파티 승률 포함
             updateHtml('stat-season-rec', seasonTxt);
             updateText('user-season-wr', `${recentWr}%`);
-            updateHtml('sp-stat-season-rec', seasonTxt);
+            updateHtml('sp-stat-season-rec', spSeasonTxt);
 
             fillRecordBlock('sp-rk', {
                 winCnt: recentW, loseCnt: recentL,
