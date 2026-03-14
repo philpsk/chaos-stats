@@ -691,8 +691,8 @@ async function selectUser(ano, trElement) {
 
         // 자동 재시도 헬퍼 (최대 3회 재시도)
         const fetchTotalRecords = (targetAno, retriesLeft) => {
-            // tabType=D (시즌 전적) 명시적으로 요청하여 연승 정보와 데이터 정합성 맞춤
-            fetch(`${worker}?ano=${targetAno}&tabType=D`)
+            // tabType=A (전체 전적) 요청 - 사용자가 요청한 "말 그대로 랭대 총 전적"
+            fetch(`${worker}?ano=${targetAno}&tabType=A`)
                 .then(r => r.text())
                 .then(t => {
                     if (window.currentFetchAno !== targetAno) return;
@@ -709,12 +709,14 @@ async function selectUser(ano, trElement) {
                             return Number(v) || 0;
                         };
 
-                        // 뷰어 로직: myRankInfo 내의 winLoseTendency 또는 myRankInfo 자체를 우선함
-                        const wt = j.myRankInfo?.winLoseTendency || j.myRankInfo || j.winLoseTendency || {};
+                        // 뷰어 로직: rank_all_wl 또는 winLoseTendency에서 전체 전적 추출
+                        const wt = j.winLoseTendency || {};
                         
                         const tw = getInt(wt.totalWinCount || wt.WinCount || wt.winCount || wt.winCnt || 0);
                         const tl = getInt(wt.totalLoseCount || wt.LoseCount || wt.loseCount || wt.loseCnt || wt.lostCount || 0);
                         const td = getInt(wt.totalDrawCount || wt.DrawCount || wt.drawCount || wt.drawCnt || 0);
+                        
+                        // 연승 정보는 뷰어와 동일하게 우선순위 적용
                         const tc = getInt(wt.consecutiveWinLose || wt.consecutive || 0);
                         
                         const tGames = tw + tl + td;
