@@ -604,7 +604,7 @@ async function selectUser(ano, trElement) {
         let recentWr = recentWrRaw ? parseInt(String(recentWrRaw).replace('%', ''), 10) : Math.round((recentW / recentP) * 100);
 
         // UI 문자열 공통 포맷 구성
-        const seasonTxt = `${recentP}전 <span class="win-text">${recentW}승</span> <span class="loss-text">${recentL}패</span> (${recentWr}%)`;
+        const seasonTxt = `<span style="white-space:nowrap !important">${recentP}전 <span class="win-text">${recentW}승</span> <span class="loss-text">${recentL}패</span></span><br><div class="sp-win-rate" style="display:inline-block">(${recentWr}%)</div>`;
         const rcData = {
             winCnt: recentW,
             loseCnt: recentL,
