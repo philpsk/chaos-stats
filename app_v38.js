@@ -725,7 +725,7 @@ async function selectUser(ano, trElement) {
             const tl = Number(j.winLoseTendency?.totalLoseCount || 0);
             const tc = Number(j.winLoseTendency?.consecutiveWinLose || 0);
             const tGames = tw + tl;
-            const recHtml = `${tGames}전 <span class="win-text">${tw}승</span> <span class="loss-text">${tl}패</span> <div class="sp-win-rate">(${Math.round(tw / (tGames || 1) * 100)}%)</div>`;
+            const recHtml = `<span style="white-space:nowrap">${tGames}전 <span class="win-text">${tw}승</span> <span class="loss-text">${tl}패</span></span><div class="sp-win-rate">(${Math.round(tw / (tGames || 1) * 100)}%)</div>`;
             const consHtml = tc > 0 ? `<span style="color:#3FB950">${tc}연승</span>` : (tc < 0 ? `<span style="color:#FF4D4D">${Math.abs(tc)}연패</span>` : '---');
             
             updateHtml('stat-total-rec', recHtml);
@@ -739,7 +739,7 @@ async function selectUser(ano, trElement) {
             const tw = Number(j.winLoseTendency?.totalWinCount || 0);
             const tl = Number(j.winLoseTendency?.totalLoseCount || 0);
             const tGames = tw + tl;
-            const recHtml = `${tGames}전 <span class="win-text">${tw}승</span> <span class="loss-text">${tl}패</span> <div class="sp-win-rate">(${Math.round(tw / (tGames || 1) * 100)}%)</div>`;
+            const recHtml = `<span style="white-space:nowrap">${tGames}전 <span class="win-text">${tw}승</span> <span class="loss-text">${tl}패</span></span><div class="sp-win-rate">(${Math.round(tw / (tGames || 1) * 100)}%)</div>`;
             
             updateHtml('stat-overall-rec', recHtml);
             updateHtml('sp-stat-overall-rec', recHtml);
