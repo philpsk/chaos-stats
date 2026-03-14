@@ -664,6 +664,7 @@ th {
   color: var(--text-dim);
 }
 
+.sp-stat-val {
   font-size: 0.9rem; /* 모바일 대응: 소폭 축소 */
   font-weight: 500;
   color: #fff;
