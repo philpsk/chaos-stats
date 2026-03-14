@@ -646,9 +646,9 @@ th {
   grid-template-columns: 1.2fr 0.8fr; /* 좌측 공간 확장 */
   grid-auto-flow: column; /* 세로로 먼저 채움 */
   grid-template-rows: repeat(6, auto); /* 6행 고정 (좌 6개, 우 6개) */
-  gap: 12px;
+  gap: 6px; /* 모바일 대응: 간격 축소 */
   background: rgba(0, 0, 0, 0.2);
-  padding: 12px;
+  padding: 8px; /* 모바일 대응: 패딩 축소 */
   border-radius: 8px;
   margin-bottom: 5px;
 }
@@ -665,7 +665,7 @@ th {
 }
 
 .sp-stat-val {
-  font-size: 0.95rem;
+  font-size: 0.9rem; /* 모바일 대응: 소폭 축소 */
   font-weight: 500;
   color: #fff;
 }
