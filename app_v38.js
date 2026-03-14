@@ -675,72 +675,77 @@ async function selectUser(ano, trElement) {
     try {
         window.currentFetchAno = norm; // 현재 클릭된 유저 식별자 저장 (Race Condition 방지)
 
-        // 로딩 상태를 즉시 UI에 반영 (메인 및 프로필 패널 둘 다)
+        // 로딩 상태를 즉시 UI에 반영
+        updateHtml('stat-overall-rec', '<span style="color:#888">확인 중...</span>');
         updateHtml('stat-total-rec', '<span style="color:#888">확인 중...</span>');
-        updateText('stat-consecutive', '---');
+        updateHtml('sp-stat-overall-rec', '<span style="color:#888">확인 중...</span>');
         updateHtml('sp-stat-total-rec', '<span style="color:#888">확인 중...</span>');
+        updateText('stat-consecutive', '---');
         updateText('sp-stat-consecutive', '---');
 
         const worker = 'https://script.google.com/macros/s/AKfycbwHhYCPI8AxevleZ-voTQ8JWDSwV3aa_-nxHDL2xz9Li5DBRmjU2PggxMNFQHUi6XdAQQ/exec';
 
-        // 자동 재시도 헬퍼 (최대 3회 재시도)
-        const fetchTotalRecords = (targetAno, retriesLeft) => {
-            fetch(`${worker}?ano=${targetAno}&recordType=1&tabType=A`)
+        // 공통 데이터 페치 함수
+        const fetchRecord = (targetAno, type, retriesLeft, callback) => {
+            fetch(`${worker}?ano=${targetAno}&recordType=${type}&tabType=A`)
                 .then(r => r.text())
                 .then(t => {
-                    // 응답이 왔을 때, 이미 다른 유저를 클릭했다면 이탈 (Stale Fetch 무시)
                     if (window.currentFetchAno !== targetAno) return;
-
                     const f = t.indexOf('{'), lx = t.lastIndexOf('}');
                     if (f !== -1 && lx !== -1) {
-                        const j = JSON.parse(t.substring(f, lx + 1)
-                            .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
-                            .replace(/:\s*'([^']*)'/g, ':"$1"')
-                            .replace(/,\s*([\]\}])/g, '$1'));
-                        const tw = Number(j.winLoseTendency?.totalWinCount || 0);
-                        const tl = Number(j.winLoseTendency?.totalLoseCount || 0);
-                        const tc = Number(j.winLoseTendency?.consecutiveWinLose || 0);
-                        const tGames = tw + tl;
-
-                        const recHtml = `${tGames}전 <span class="win-text">${tw}승</span> <span class="loss-text">${tl}패</span> (${Math.round(tw / (tGames || 1) * 100)}%)`;
-                        const consHtml = tc > 0 ? `<span style="color:#3FB950">${tc}연승</span>` : (tc < 0 ? `<span style="color:#FF4D4D">${Math.abs(tc)}연패</span>` : '---');
-
-                        updateHtml('stat-total-rec', recHtml);
-                        updateHtml('stat-consecutive', consHtml);
-
-                        // Sync to Profile Panel
-                        updateHtml('sp-stat-total-rec', recHtml);
-                        updateHtml('sp-stat-consecutive', consHtml);
-
-                        // 전체 전적 블록도 API 결과로 갱신 (Premium 데이터가 없을 때만)
-                        if (!premEntry) {
-                            fillRecordBlock('sp-all', j.winLoseTendency || {});
-                        }
-                    } else {
-                        handleFetchError(targetAno, retriesLeft);
-                    }
+                        try {
+                            const j = JSON.parse(t.substring(f, lx + 1)
+                                .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
+                                .replace(/:\s*'([^']*)'/g, ':"$1"')
+                                .replace(/,\s*([\]\}])/g, '$1'));
+                            callback(j);
+                        } catch(e) { handleErr(targetAno, type, retriesLeft, callback); }
+                    } else { handleErr(targetAno, type, retriesLeft, callback); }
                 })
-                .catch(() => { handleFetchError(targetAno, retriesLeft); });
+                .catch(() => handleErr(targetAno, type, retriesLeft, callback));
         };
 
-        const handleFetchError = (targetAno, retriesLeft) => {
-            if (window.currentFetchAno !== targetAno) return; // Stale 방지
-
-            if (retriesLeft > 0) {
-                // 재시도 횟수가 남았으면 1.5초 후 재시도 (API 부하 방지용 딜레이)
-                setTimeout(() => fetchTotalRecords(targetAno, retriesLeft - 1), 1500);
-            } else {
-                // 더이상 재시도 불가능하면 최종 에러 UI 노출
+        const handleErr = (targetAno, type, retriesLeft, callback) => {
+            if (window.currentFetchAno !== targetAno) return;
+            if (retriesLeft > 0) setTimeout(() => fetchRecord(targetAno, type, retriesLeft - 1, callback), 1500);
+            else {
                 const errHtml = '<span style="color:#f87171">조회 실패</span>';
-                updateHtml('stat-total-rec', errHtml);
-                updateHtml('sp-stat-total-rec', errHtml);
-                updateText('stat-consecutive', '---');
-                updateText('sp-stat-consecutive', '---');
+                if (type === 1) { 
+                    updateHtml('stat-total-rec', errHtml); updateHtml('sp-stat-total-rec', errHtml); 
+                    updateText('stat-consecutive', '---'); updateText('sp-stat-consecutive', '---');
+                } else { 
+                    updateHtml('stat-overall-rec', errHtml); updateHtml('sp-stat-overall-rec', errHtml); 
+                }
             }
         };
 
-        // 초기 호출: 최대 재시도 5회
-        fetchTotalRecords(norm, 5);
+        // 1. 랭대 전적 페치 (recordType=1)
+        fetchRecord(norm, 1, 5, (j) => {
+            const tw = Number(j.winLoseTendency?.totalWinCount || 0);
+            const tl = Number(j.winLoseTendency?.totalLoseCount || 0);
+            const tc = Number(j.winLoseTendency?.consecutiveWinLose || 0);
+            const tGames = tw + tl;
+            const recHtml = `${tGames}전 <span class="win-text">${tw}승</span> <span class="loss-text">${tl}패</span> (${Math.round(tw / (tGames || 1) * 100)}%)`;
+            const consHtml = tc > 0 ? `<span style="color:#3FB950">${tc}연승</span>` : (tc < 0 ? `<span style="color:#FF4D4D">${Math.abs(tc)}연패</span>` : '---');
+            
+            updateHtml('stat-total-rec', recHtml);
+            updateHtml('stat-consecutive', consHtml);
+            updateHtml('sp-stat-total-rec', recHtml);
+            updateHtml('sp-stat-consecutive', consHtml);
+        });
+
+        // 2. 전체 전적 페치 (recordType=0)
+        fetchRecord(norm, 0, 5, (j) => {
+            const tw = Number(j.winLoseTendency?.totalWinCount || 0);
+            const tl = Number(j.winLoseTendency?.totalLoseCount || 0);
+            const tGames = tw + tl;
+            const recHtml = `${tGames}전 <span class="win-text">${tw}승</span> <span class="loss-text">${tl}패</span> (${Math.round(tw / (tGames || 1) * 100)}%)`;
+            
+            updateHtml('stat-overall-rec', recHtml);
+            updateHtml('sp-stat-overall-rec', recHtml);
+
+            if (!premEntry) fillRecordBlock('sp-all', j.winLoseTendency || {});
+        });
     } catch (e) { }
 
     // ── HEROES 섹션
