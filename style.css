@@ -1327,8 +1327,9 @@ th {
   .ranking-table th:nth-child(2) {
     padding-left: 2px !important;
     padding-right: 2px !important;
-    max-width: 80px !important;
-    /* Prevent expansion */
+    width: 70px !important; /* 너비 축소 */
+    max-width: 70px !important;
+    text-align: left !important; /* 등급과 붙이기 위해 좌측 정렬 */
   }
 
   /* Column 4 (Grade) - Note: 3 is hidden */
@@ -1343,18 +1344,16 @@ th {
   /* Column 5 (Win/Loss) */
   .ranking-table td:nth-child(5),
   .ranking-table th:nth-child(5) {
-    padding-left: 2px !important;
-    width: 90px !important;
-    /* Match reduced bar width */
+    padding-left: 0px !important;
+    padding-right: 2px !important;
+    width: 80px !important; /* 바 너비 축소에 맞춰 열 너비 조정 */
   }
 
   .wl-bar-container {
-    width: 85px !important;
-    /* Significantly reduced from 120px/150px */
+    width: 75px !important; /* 바 너비 축소 (85px -> 75px) */
     height: 18px !important;
     line-height: 18px !important;
     font-size: 0.72rem !important;
-    /* Increased from 0.65rem (1.1x) - V101 */
   }
 
   .wl-bar-win,
