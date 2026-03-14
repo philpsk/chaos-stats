@@ -672,8 +672,8 @@ th {
 
 .sp-win-rate {
   display: block;
-  font-size: 0.9rem; /* 시즌 전적과 동일한 크기 */
-  color: #fff; /* 시즌 전적과 동일한 흰색 */
+  font-size: 0.8rem; /* 다른 폰트와 밸런스 조정 */
+  color: var(--text-dim); /* 너무 튀지 않게 부드러운 회색 */
   margin-top: 2px;
 }
 
