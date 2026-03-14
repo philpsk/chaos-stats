@@ -691,10 +691,10 @@ async function selectUser(ano, trElement) {
 
         // 자동 재시도 헬퍼 (최대 3회 재시도)
         const fetchTotalRecords = (targetAno, retriesLeft) => {
-            fetch(`${worker}?ano=${targetAno}`)
+            // tabType=D (시즌 전적) 명시적으로 요청하여 연승 정보와 데이터 정합성 맞춤
+            fetch(`${worker}?ano=${targetAno}&tabType=D`)
                 .then(r => r.text())
                 .then(t => {
-                    // 응답이 왔을 때, 이미 다른 유저를 클릭했다면 이탈 (Stale Fetch 무시)
                     if (window.currentFetchAno !== targetAno) return;
 
                     const f = t.indexOf('{'), lx = t.lastIndexOf('}');
@@ -709,8 +709,9 @@ async function selectUser(ano, trElement) {
                             return Number(v) || 0;
                         };
 
-                        const wt = j.winLoseTendency || {};
-                        // 뷰어와 동일한 필드 우선순위 적용
+                        // 뷰어 로직: myRankInfo 내의 winLoseTendency 또는 myRankInfo 자체를 우선함
+                        const wt = j.myRankInfo?.winLoseTendency || j.myRankInfo || j.winLoseTendency || {};
+                        
                         const tw = getInt(wt.totalWinCount || wt.WinCount || wt.winCount || wt.winCnt || 0);
                         const tl = getInt(wt.totalLoseCount || wt.LoseCount || wt.loseCount || wt.loseCnt || wt.lostCount || 0);
                         const td = getInt(wt.totalDrawCount || wt.DrawCount || wt.drawCount || wt.drawCnt || 0);
