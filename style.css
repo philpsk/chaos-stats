@@ -673,7 +673,7 @@ th {
 .sp-win-rate {
   display: block;
   font-size: 0.8rem; /* 다른 폰트와 밸런스 조정 */
-  color: var(--text-dim); /* 너무 튀지 않게 부드러운 회색 */
+  color: #fff; /* 사용자 요청: 다시 선명한 흰색으로 */
   margin-top: 2px;
 }
 
