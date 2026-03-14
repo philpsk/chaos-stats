@@ -597,11 +597,17 @@ async function selectUser(ano, trElement) {
     const premEntry = premiumMap[norm];
     try {
         // 공통: 메인 데이터 기준 최신 전적 및 수치 추출
-        const recentW = Number(findVal(user, ['WinCount', 'winCount', 'win']) || swl.totalWinCount || 0);
-        const recentL = Number(findVal(user, ['LoseCount', 'loseCount', 'lose']) || swl.totalLoseCount || 0);
-        const recentP = Number(findVal(user, ['playCount', 'PlayCount']) || swl.playCount || (recentW + recentL) || 1);
-        let recentWrRaw = findVal(user, ['WinRate_InclDisc', 'winRate']) || swl.totalWinRate;
-        let recentWr = recentWrRaw ? parseInt(String(recentWrRaw).replace('%', ''), 10) : Math.round((recentW / recentP) * 100);
+        const recentW = Number(findVal(user, ['WinCount', 'winCount', 'win', 'winCnt', 'totalWinCount']) || swl.totalWinCount || 0);
+        const recentL = Number(findVal(user, ['LoseCount', 'loseCount', 'lose', 'loseCnt', 'lostCount', 'totalLoseCount']) || swl.totalLoseCount || 0);
+        // playCount 필드가 명시되어 있어도 승+패 합산을 우선하여 데이터 무결성 확보 (뷰어 방식)
+        const calcP = recentW + recentL;
+        const recentP = calcP || Number(findVal(user, ['playCount', 'PlayCount', 'playCnt']) || swl.playCount || 1);
+        
+        let recentWrRaw = findVal(user, ['WinRate_InclDisc', 'winRate', 'totalWinRate', 'seasonWinningRate']) || swl.totalWinRate;
+        // 승률이 없거나 0인 경우 직접 계산
+        let recentWr = (recentWrRaw && parseInt(String(recentWrRaw).replace('%', ''), 10) > 0) 
+            ? parseInt(String(recentWrRaw).replace('%', ''), 10) 
+            : Math.round((recentW / (recentP || 1)) * 100);
 
         // UI 문자열 공통 포맷 구성
         const seasonTxt = `${recentP}전 <span class="win-text">${recentW}승</span> <span class="loss-text">${recentL}패</span> (${recentWr}%)`;
@@ -697,12 +703,23 @@ async function selectUser(ano, trElement) {
                             .replace(/([{,])\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
                             .replace(/:\s*'([^']*)'/g, ':"$1"')
                             .replace(/,\s*([\]\}])/g, '$1'));
-                        const tw = Number(j.winLoseTendency?.totalWinCount || 0);
-                        const tl = Number(j.winLoseTendency?.totalLoseCount || 0);
-                        const tc = Number(j.winLoseTendency?.consecutiveWinLose || 0);
-                        const tGames = tw + tl;
+                        const getInt = (v) => {
+                            if (!v) return 0;
+                            if (typeof v === 'string') return parseInt(v.replace(/[^0-9.-]/g, ''), 10) || 0;
+                            return Number(v) || 0;
+                        };
 
-                        const recHtml = `${tGames}전 <span class="win-text">${tw}승</span> <span class="loss-text">${tl}패</span> (${Math.round(tw / (tGames || 1) * 100)}%)`;
+                        const wt = j.winLoseTendency || {};
+                        // 뷰어와 동일한 필드 우선순위 적용
+                        const tw = getInt(wt.totalWinCount || wt.WinCount || wt.winCount || wt.winCnt || 0);
+                        const tl = getInt(wt.totalLoseCount || wt.LoseCount || wt.loseCount || wt.loseCnt || wt.lostCount || 0);
+                        const td = getInt(wt.totalDrawCount || wt.DrawCount || wt.drawCount || wt.drawCnt || 0);
+                        const tc = getInt(wt.consecutiveWinLose || wt.consecutive || 0);
+                        
+                        const tGames = tw + tl + td;
+                        const tRate = tGames > 0 ? Math.round((tw / tGames) * 100) : 0;
+
+                        const recHtml = `${tGames}전 <span class="win-text">${tw}승</span> <span class="loss-text">${tl}패</span> (${tRate}%)`;
                         const consHtml = tc > 0 ? `<span style="color:#3FB950">${tc}연승</span>` : (tc < 0 ? `<span style="color:#FF4D4D">${Math.abs(tc)}연패</span>` : '---');
 
                         updateHtml('stat-total-rec', recHtml);
@@ -714,7 +731,7 @@ async function selectUser(ano, trElement) {
 
                         // 전체 전적 블록도 API 결과로 갱신 (Premium 데이터가 없을 때만)
                         if (!premEntry) {
-                            fillRecordBlock('sp-all', j.winLoseTendency || {});
+                            fillRecordBlock('sp-all', wt);
                         }
                     } else {
                         handleFetchError(targetAno, retriesLeft);
