@@ -393,10 +393,11 @@ th {
 .ranking-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed; /* 컬럼 너비 강제 고정 */
 }
 
 .ranking-table thead th {
-  text-align: left;
+  text-align: center;
   padding: 8px 10px;
   color: var(--accent-blue);
   font-size: 0.8rem;
