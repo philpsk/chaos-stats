@@ -284,7 +284,7 @@ function renderTable() {
         }).join('');
         return `<tr onclick="selectUser('${ano}', this)">
             <td>${rank}</td>
-            <td style="text-align:center; overflow:hidden; text-overflow:ellipsis;">${nick}</td>
+            <td style="text-align:left; padding-left:15px; overflow:hidden; text-overflow:ellipsis;">${nick}</td>
             <td class="hide-on-panel hide-on-mobile"><div class="hero-icons-container">${icons}</div></td>
             <td class="hide-on-panel" style="color:${getGradeColor(grade)}; text-align:center;">${displayGrade}</td>
             <td class="hide-on-panel">

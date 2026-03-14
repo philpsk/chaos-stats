@@ -544,7 +544,7 @@ th {
 .hero-icons-container {
   display: flex;
   gap: 4px;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   min-height: 30px;
 }
